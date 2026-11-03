@@ -2,6 +2,8 @@
 
 A fan-made guide to the Pokémon series: every Pokémon, region and main-series game, with per-game walkthroughs, wild Pokémon locations, key items and a team builder.
 
+**Live site: https://alberto210495.github.io/pokemon-web/**
+
 It is a plain HTML, CSS and JavaScript site. There is no framework and no build step: open it in a browser and it runs.
 
 ## Features
@@ -81,6 +83,10 @@ npx oxlint
 ```
 
 A clean run prints `Found 0 warnings and 0 errors`. `.oxlintrc.json` turns off the unused-variable check for `data.js` and `guides.js`: those files define globals such as `GAMES` and `GUIDES` that `app.js` uses through the `<script>` tags, which Oxlint can't see.
+
+### Publishing
+
+The site is hosted on GitHub Pages from the `main` branch. Every push to `main` updates the live site within a minute or two; the **Actions** tab shows the progress. The empty `.nojekyll` file tells GitHub to serve the files as they are instead of running them through Jekyll.
 
 ### Working across two computers
 
