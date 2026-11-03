@@ -39,7 +39,7 @@ js/guides.js      Hand-written guide data: gyms, Elite Four, key items, gift Pok
 js/app.js         The app: hash router, API helper with caching, and every page
 ```
 
-Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `#/guide/red-blue/locations` or `#/team/6,25,130/red-blue`. The full route list is at the top of `js/app.js`.
+Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `#/guide/red-blue/locations` or `#/team/6,25,130/red-blue`. Pokédex filters are kept in the URL too, as in `#/pokedex?gen=3&type=water&q=mud`, so a filtered view can be bookmarked or shared. The full route list is at the top of `js/app.js`.
 
 ## Where the data comes from
 

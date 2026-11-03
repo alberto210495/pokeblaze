@@ -1,5 +1,5 @@
 // PokéInfo — single-page app with hash routing.
-// Routes: #/  #/pokedex[/gen]  #/pokemon/:id  #/regions  #/region/:id
+// Routes: #/  #/pokedex[?gen=&type=&q=]  #/pokemon/:id  #/regions  #/region/:id
 //         #/games  #/game/:id  #/compare[/:a/:b]
 //         #/guides  #/guide/:id[/walkthrough|locations|items]
 //         #/team[/:id,:id,…[/:game]]
@@ -74,6 +74,8 @@ const artwork = (id, shiny = false) => `${SPRITES}/other/official-artwork/${shin
 const pad = id => '#' + String(id).padStart(4, '0');
 const idFromUrl = url => Number(url.split('/').filter(Boolean).pop());
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = s => String(s).replace(/[&<>"']/g, c => ESCAPES[c]);
 
 const NAME_FIXES = {
   'nidoran-f': 'Nidoran♀', 'nidoran-m': 'Nidoran♂', 'mr-mime': 'Mr. Mime', 'mime-jr': 'Mime Jr.',
@@ -175,10 +177,32 @@ function home() {
 }
 
 // Pokédex filters persist while navigating.
+// Filters live in the URL (#/pokedex?gen=3&type=water&q=pika) so they can be bookmarked and shared.
+// A bare #/pokedex keeps the last filters used in this visit.
 const dex = { q: '', gen: '', type: '' };
 
+function readDexQuery(genParam) {
+  const query = location.hash.split('?')[1];
+  if (!query && !genParam) return;
+  const p = new URLSearchParams(query);
+  const gen = genParam || p.get('gen') || ''; // #/pokedex/3 is the old form of ?gen=3
+  const type = p.get('type') || '';
+  dex.gen = GENERATIONS.some(g => String(g.n) === gen) ? gen : '';
+  dex.type = TYPE_COLORS[type] ? type : '';
+  dex.q = p.get('q') || '';
+}
+
+function dexHash() {
+  const p = new URLSearchParams();
+  if (dex.gen) p.set('gen', dex.gen);
+  if (dex.type) p.set('type', dex.type);
+  if (dex.q.trim()) p.set('q', dex.q.trim());
+  const query = p.toString();
+  return '#/pokedex' + (query ? '?' + query : '');
+}
+
 async function pokedex(genParam) {
-  if (genParam) dex.gen = genParam;
+  readDexQuery(genParam);
   await loadSpecies();
 
   return {
@@ -186,12 +210,12 @@ async function pokedex(genParam) {
       <h1>Pokédex</h1>
       <p class="subtitulo">Search by name or number, or filter by generation and type.</p>
       <div class="filtros">
-        <input id="q" type="search" placeholder="Search: Pikachu, 25…" value="${dex.q}">
-        <select id="gen">
+        <input id="q" type="search" placeholder="Search: Pikachu, 25…" aria-label="Search by name or number" value="${esc(dex.q)}">
+        <select id="gen" aria-label="Generation">
           <option value="">All generations</option>
           ${GENERATIONS.map(g => `<option value="${g.n}" ${dex.gen == g.n ? 'selected' : ''}>Gen ${g.n} — ${regionById(g.region).name}</option>`).join('')}
         </select>
-        <select id="type">
+        <select id="type" aria-label="Type">
           <option value="">All types</option>
           ${Object.keys(TYPE_COLORS).map(t => `<option value="${t}" ${dex.type === t ? 'selected' : ''}>${cap(t)}</option>`).join('')}
         </select>
@@ -220,6 +244,8 @@ async function pokedex(genParam) {
 async function applyFilters() {
   const grid = document.getElementById('grid');
   const count = document.getElementById('count');
+  if (!grid) return; // a delayed search fired after the user left the Pokédex
+  if (location.hash !== dexHash()) history.replaceState(null, '', dexHash()); // replace, so typing doesn't flood history
   let ids = [...speciesNames.keys()];
 
   if (dex.gen) {
@@ -447,7 +473,7 @@ async function regionDetail(id) {
       ${r.games.map(gid => { const g = gameById(gid); return `<a class="chip" href="#/game/${g.id}">${g.name} (${g.year})</a>`; }).join('')}
     </div>
 
-    ${gen ? `<h2>Pokédex</h2><a class="btn" href="#/pokedex/${gen.n}">View the ${gen.to - gen.from + 1} Pokémon introduced in Gen ${gen.n}</a>` : ''}`;
+    ${gen ? `<h2>Pokédex</h2><a class="btn" href="#/pokedex?gen=${gen.n}">View the ${gen.to - gen.from + 1} Pokémon introduced in Gen ${gen.n}</a>` : ''}`;
 }
 
 async function games() {
@@ -540,9 +566,9 @@ async function compare(aId, bId) {
       <h1>Compare games</h1>
       <p class="subtitulo">Pick two games to see them side by side. Highlighted rows are different.</p>
       <div class="selectores">
-        <select class="sel" id="selA">${options(a)}</select>
+        <select class="sel" id="selA" aria-label="First game">${options(a)}</select>
         <span class="vs">VS</span>
-        <select class="sel" id="selB">${options(b)}</select>
+        <select class="sel" id="selB" aria-label="Second game">${options(b)}</select>
       </div>
       <div class="tabla-wrap">
         <table class="comparar">
@@ -663,7 +689,7 @@ async function guideLocations(g, guide, header) {
   return {
     html: `${header}
       <p class="subtitulo">Open a location to see which wild Pokémon appear there in this game, how to find them and at what level. Encounter data comes from PokeAPI; newer games may have little or none.</p>
-      <div class="filtros"><input id="lugarQ" type="search" placeholder="Filter locations: Route 3, Mt. Moon…"></div>
+      <div class="filtros"><input id="lugarQ" type="search" placeholder="Filter locations: Route 3, Mt. Moon…" aria-label="Filter locations"></div>
       ${sections}`,
     mount() {
       const q = document.getElementById('lugarQ');
@@ -888,7 +914,7 @@ async function team(param, gameParam) {
       </div>
       ${gameNote ? `<p class="nota" style="margin:-10px 0 16px">${gameNote}</p>` : ''}
       <form class="filtros" id="addForm">
-        <input id="addQ" list="nombres" placeholder="${ids.length >= TEAM_SIZE ? 'Team is full' : 'Add a Pokémon: name or number…'}" ${ids.length >= TEAM_SIZE ? 'disabled' : ''}>
+        <input id="addQ" list="nombres" aria-label="Add a Pokémon by name or number" placeholder="${ids.length >= TEAM_SIZE ? 'Team is full' : 'Add a Pokémon: name or number…'}" ${ids.length >= TEAM_SIZE ? 'disabled' : ''}>
         <datalist id="nombres">${pool.map(id => `<option value="${nameOf(id)}">`).join('')}</datalist>
         <button class="btn" ${ids.length >= TEAM_SIZE ? 'disabled' : ''}>Add</button>
         <button type="button" class="btn sec" id="randomTeam">🎲 Random team</button>
@@ -939,13 +965,33 @@ const ROUTES = {
 };
 const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides' };
 let renderToken = 0;
+let lastRoute = null;
+
+function setMenuOpen(open) {
+  document.getElementById('nav').classList.toggle('abierto', open);
+  document.getElementById('menuBtn').setAttribute('aria-expanded', String(open));
+}
+
+// Name the tab after the page heading, and move keyboard focus to the new page.
+// On a re-render of the same page (adding to a team, changing a select) focus returns to the control that had it.
+function afterRender(route, keepId) {
+  const h1 = app.querySelector('h1');
+  document.title = h1 && route ? `${h1.textContent.trim()} · PokéInfo` : 'PokéInfo';
+  if (lastRoute === null) { lastRoute = route; return; } // first load: leave focus where the browser put it
+  const keep = route === lastRoute && keepId && document.getElementById(keepId);
+  lastRoute = route;
+  if (keep && !keep.disabled) { keep.focus({ preventScroll: true }); return; }
+  if (h1) { h1.tabIndex = -1; h1.focus({ preventScroll: true }); }
+}
 
 async function router() {
-  const [route = '', ...params] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
+  const [path] = location.hash.replace(/^#\/?/, '').split('?'); // the query part is read by the page itself
+  const [route = '', ...params] = path.split('/').map(decodeURIComponent);
   const section = NAV_SECTION[route] || route;
   document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('activo', a.dataset.route === section));
-  document.getElementById('nav').classList.remove('abierto');
+  setMenuOpen(false);
 
+  const keepId = app.contains(document.activeElement) ? document.activeElement.id : '';
   const token = ++renderToken;
   const view = ROUTES[route] || notFound;
   app.innerHTML = loading();
@@ -957,14 +1003,16 @@ async function router() {
     const { html, mount } = typeof result === 'string' ? { html: result } : result;
     app.innerHTML = html;
     if (mount) mount();
+    afterRender(route, keepId);
   } catch (err) {
     if (token !== renderToken) return;
     console.error(err);
-    app.innerHTML = `<div class="error"><h2>Something went wrong</h2><p>Could not load the data. Check your internet connection and try again.</p>
+    app.innerHTML = `<div class="error"><h1>Something went wrong</h1><p>Could not load the data. Check your internet connection and try again.</p>
       <button class="btn" onclick="router()">Retry</button></div>`;
+    afterRender(route, keepId);
   }
 }
 
-document.getElementById('menuBtn').onclick = () => document.getElementById('nav').classList.toggle('abierto');
+document.getElementById('menuBtn').onclick = () => setMenuOpen(!document.getElementById('nav').classList.contains('abierto'));
 window.addEventListener('hashchange', router);
 router();

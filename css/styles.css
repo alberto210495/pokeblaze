@@ -81,6 +81,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 24px; min-height: 70vh; }
 @media (max-width: 720px) { main { padding: 16px; } }
 
 h1 { font-size: 2rem; margin: 0 0 8px; }
+h1[tabindex="-1"]:focus { outline: none; } /* focused by the router for screen readers, not an interactive control */
 h2 { font-size: 1.35rem; margin: 28px 0 12px; }
 .subtitulo { color: var(--suave); margin: 0 0 24px; }
 
