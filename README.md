@@ -80,7 +80,7 @@ The project uses [Oxlint](https://oxc.rs):
 npx oxlint
 ```
 
-It reports `GAMES`, `GUIDES` and other constants in `data.js` and `guides.js` as unused. That's a false positive: those files define globals that `app.js` uses through the `<script>` tags.
+A clean run prints `Found 0 warnings and 0 errors`. `.oxlintrc.json` turns off the unused-variable check for `data.js` and `guides.js`: those files define globals such as `GAMES` and `GUIDES` that `app.js` uses through the `<script>` tags, which Oxlint can't see.
 
 ### Working across two computers
 
@@ -104,7 +104,7 @@ To set up a new computer:
 winget install Git.Git          # then restart VS Code
 git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
-git clone https://github.com/GARU21/pokemon-web.git
+git clone https://github.com/alberto210495/pokemon-web.git
 ```
 
 ## Credits

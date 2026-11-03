@@ -1,0 +1,10 @@
+{
+  "overrides": [
+    {
+      "files": ["js/data.js", "js/guides.js"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ]
+}
