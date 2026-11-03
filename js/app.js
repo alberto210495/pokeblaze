@@ -20,12 +20,15 @@ const STORE_PREFIX = 'pokeinfo:';
 const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 async function readStored(url) {
-  try {
-    const store = await caches.open(STORE_NAME);
-    const res = await store.match(url);
-    if (res && Date.now() - Number(res.headers.get('x-saved')) < MAX_AGE) return res.json();
+  let store;
+  try { store = await caches.open(STORE_NAME); } catch { /* Cache API unavailable (e.g. file://): fall back to localStorage */ }
+  if (store) {
+    try {
+      const res = await store.match(url);
+      if (res && Date.now() - Number(res.headers.get('x-saved')) < MAX_AGE) return await res.json();
+    } catch { store.delete(url).catch(() => {}); } // damaged entry: drop it and fetch again
     return null;
-  } catch { /* Cache API unavailable (e.g. file://): fall back to localStorage */ }
+  }
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_PREFIX + url));
     return saved && Date.now() - saved.t < MAX_AGE ? saved.d : null;
@@ -52,11 +55,16 @@ async function writeStored(url, data) {
   }
 }
 
+const TIMEOUT = 15000; // give up on a request after 15 s instead of showing "Loading…" forever
+
 function api(url) {
   const full = url.startsWith('http') ? url : API + url;
+  // Only ever talk to PokeAPI, even if a response contains a link somewhere else.
+  if (!full.startsWith(API + '/')) return Promise.reject(new Error(`Blocked request to ${full}`));
   if (!cache.has(full)) {
+    const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(TIMEOUT) : undefined;
     const req = readStored(full)
-      .then(saved => saved || fetch(full)
+      .then(saved => saved || fetch(full, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
         .then(data => { writeStored(full, data); return data; }))
       .catch(err => { cache.delete(full); throw err; });
@@ -74,6 +82,8 @@ const artwork = (id, shiny = false) => `${SPRITES}/other/official-artwork/${shin
 const pad = id => '#' + String(id).padStart(4, '0');
 const idFromUrl = url => Number(url.split('/').filter(Boolean).pop());
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+// Security rule: every piece of text that comes from PokeAPI or the URL goes through esc() before it is
+// put into HTML. The hand-written data in data.js and guides.js is trusted and contains no HTML.
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = s => String(s).replace(/[&<>"']/g, c => ESCAPES[c]);
 
@@ -84,23 +94,28 @@ const NAME_FIXES = {
   'kommo-o': 'Kommo-o', flabebe: 'Flabébé', 'chi-yu': 'Chi-Yu', 'chien-pao': 'Chien-Pao',
   'ting-lu': 'Ting-Lu', 'wo-chien': 'Wo-Chien',
 };
-const prettyName = slug => NAME_FIXES[slug] || slug.split('-').map(cap).join(' ');
+const rawPretty = slug => (has(NAME_FIXES, slug) && NAME_FIXES[slug]) || String(slug).split('-').map(cap).join(' ');
+const prettyName = slug => esc(rawPretty(slug)); // for HTML
 
-// Full species list (id + name), loaded once.
+// Full species list (id + name), loaded once. Names are stored as plain text.
 let speciesNames = null;
 async function loadSpecies() {
   if (!speciesNames) {
     const data = await api(`/pokemon-species?limit=${TOTAL}`);
     speciesNames = new Map(
       data.results
-        .map(s => [idFromUrl(s.url), prettyName(s.name)])
-        .filter(([id]) => id <= TOTAL)
+        .map(s => [idFromUrl(s.url), rawPretty(s.name)])
+        .filter(([id]) => Number.isInteger(id) && id >= 1 && id <= TOTAL)
         .sort((a, b) => a[0] - b[0])
     );
   }
   return speciesNames;
 }
-const nameOf = id => (speciesNames && speciesNames.get(id)) || pad(id);
+const rawNameOf = id => (speciesNames && speciesNames.get(id)) || pad(id); // plain text (search, messages)
+const nameOf = id => esc(rawNameOf(id)); // for HTML
+
+// Own-property check, so keys from the URL like "constructor" or "__proto__" never match built-in object members.
+const has = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 const genOf = id => GENERATIONS.find(g => id >= g.from && id <= g.to);
 const regionById = id => REGIONS.find(r => r.id === id);
@@ -108,10 +123,12 @@ const gameById = id => GAMES.find(g => g.id === id);
 
 // ---------- Reusable components ----------
 
-const imgFallback = id => `onerror="this.onerror=null;this.src='${artwork(id)}'"`;
+// Some small sprites are missing; those images fall back to the official artwork.
+// Handled by one listener (see the bottom of this file) instead of inline onerror="…" code.
+const imgFallback = id => `data-fallback="${artwork(id)}"`;
 
 const pokeCard = id => `
-  <a class="poke" href="#/pokemon/${id}">
+  <a class="poke" href="#/pokemon/${id}" data-id="${id}">
     <img loading="lazy" src="${sprite(id)}" alt="${nameOf(id)}" ${imgFallback(id)}>
     <div class="num">${pad(id)}</div>
     <div class="nom">${nameOf(id)}</div>
@@ -123,14 +140,14 @@ const miniList = ids => `<div class="mini">${ids.map(id => `
     <div>${nameOf(id)}</div>
   </a>`).join('')}</div>`;
 
-const typeBadge = t => `<span class="tipo" style="background:${TYPE_COLORS[t] || '#888'}">${cap(t)}</span>`;
+const typeBadge = t => `<span class="tipo" style="background:${has(TYPE_COLORS, t) ? TYPE_COLORS[t] : '#888'}">${esc(cap(t))}</span>`;
 const list = items => `<ul class="lista">${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
 const loading = (msg = 'Loading…') => `<div class="cargando">${msg}</div>`;
 
 // PokeAPI location slugs look like "kanto-route-1" or "mt-moon-b1f".
 const REGION_PREFIX = /^(kanto|johto|hoenn|sinnoh|unova|kalos|alola|galar|hisui|paldea)-/;
-const placeName = slug => slug.replace(REGION_PREFIX, '').replace(/-area$/, '').split('-')
-  .map(w => /^b?\d+f$/.test(w) ? w.toUpperCase() : cap(w)).join(' ');
+const placeName = slug => esc(String(slug).replace(REGION_PREFIX, '').replace(/-area$/, '').split('-')
+  .map(w => /^b?\d+f$/.test(w) ? w.toUpperCase() : cap(w)).join(' '));
 
 // Display name of each PokeAPI version slug of a game ("red" → "Red").
 const versionLabels = (g, guide) => Object.fromEntries(guide.versions.map((v, i) =>
@@ -188,7 +205,7 @@ function readDexQuery(genParam) {
   const gen = genParam || p.get('gen') || ''; // #/pokedex/3 is the old form of ?gen=3
   const type = p.get('type') || '';
   dex.gen = GENERATIONS.some(g => String(g.n) === gen) ? gen : '';
-  dex.type = TYPE_COLORS[type] ? type : '';
+  dex.type = has(TYPE_COLORS, type) ? type : '';
   dex.q = p.get('q') || '';
 }
 
@@ -221,8 +238,9 @@ async function pokedex(genParam) {
         </select>
         <button class="btn sec" id="clear">Clear</button>
       </div>
-      <div class="contador" id="count"></div>
-      <div class="rejilla" id="grid"></div>`,
+      <div class="contador" id="count" aria-live="polite"></div>
+      <p class="subtitulo" id="dexMsg" hidden></p>
+      <div class="rejilla" id="grid">${[...speciesNames.keys()].map(pokeCard).join('')}</div>`,
     mount() {
       const q = document.getElementById('q');
       const gen = document.getElementById('gen');
@@ -241,34 +259,43 @@ async function pokedex(genParam) {
   };
 }
 
+// The grid is built once; filtering only hides and shows cards, so images already loaded stay loaded.
+let filterToken = 0;
 async function applyFilters() {
   const grid = document.getElementById('grid');
-  const count = document.getElementById('count');
   if (!grid) return; // a delayed search fired after the user left the Pokédex
+  const count = document.getElementById('count');
+  const msg = document.getElementById('dexMsg');
   if (location.hash !== dexHash()) history.replaceState(null, '', dexHash()); // replace, so typing doesn't flood history
-  let ids = [...speciesNames.keys()];
+  const token = ++filterToken;
 
-  if (dex.gen) {
-    const g = GENERATIONS.find(x => x.n == dex.gen);
-    ids = ids.filter(id => id >= g.from && id <= g.to);
-  }
+  let ofType = null;
   if (dex.type) {
-    grid.innerHTML = loading('Filtering by type…');
+    count.textContent = 'Filtering by type…';
     try {
       const data = await api(`/type/${dex.type}`);
-      const ofType = new Set(data.pokemon.map(p => idFromUrl(p.pokemon.url)));
-      ids = ids.filter(id => ofType.has(id));
+      ofType = new Set(data.pokemon.map(p => idFromUrl(p.pokemon.url)));
     } catch {
-      grid.innerHTML = '<div class="error">Could not load the type filter.</div>';
-      return;
+      ofType = undefined;
     }
+    if (token !== filterToken || !grid.isConnected) return; // a newer filter or page took over
   }
-  const q = dex.q.trim().toLowerCase().replace(/^#0*/, '');
-  if (q) ids = ids.filter(id => nameOf(id).toLowerCase().includes(q) || String(id) === q);
 
-  if (!document.body.contains(grid)) return; // user navigated away
-  count.textContent = `${ids.length} Pokémon`;
-  grid.innerHTML = ids.length ? ids.map(pokeCard).join('') : '<p class="subtitulo">No Pokémon match your search.</p>';
+  const g = dex.gen && GENERATIONS.find(x => String(x.n) === String(dex.gen));
+  const q = dex.q.trim().toLowerCase().replace(/^#0*/, '');
+  let shown = 0;
+  for (const card of grid.children) {
+    const id = Number(card.dataset.id);
+    const show = ofType !== undefined
+      && (!g || (id >= g.from && id <= g.to))
+      && (!ofType || ofType.has(id))
+      && (!q || rawNameOf(id).toLowerCase().includes(q) || String(id) === q);
+    card.hidden = !show;
+    if (show) shown++;
+  }
+  count.textContent = ofType === undefined ? '' : `${shown} Pokémon`;
+  msg.hidden = shown > 0;
+  msg.textContent = ofType === undefined ? 'Could not load the type filter. Check your connection and try again.' : 'No Pokémon match your search.';
 }
 
 function evolutionStages(node, depth = 0, out = []) {
@@ -282,21 +309,22 @@ async function pokemonDetail(param) {
   if (!id || id < 1 || id > TOTAL) return notFound();
 
   const [p, s] = await Promise.all([api(`/pokemon/${id}`), api(`/pokemon-species/${id}`), loadSpecies()]);
-  const chain = await api(s.evolution_chain.url).catch(() => null);
+  const chain = s.evolution_chain ? await api(s.evolution_chain.url).catch(() => null) : null;
 
-  const en = arr => arr.filter(x => x.language.name === 'en');
-  const name = (en(s.names)[0] || {}).name || nameOf(id);
-  const genus = (en(s.genera)[0] || {}).genus || '';
+  const en = arr => (arr || []).filter(x => x.language.name === 'en');
+  const name = esc((en(s.names)[0] || {}).name || rawNameOf(id));
+  const genus = esc((en(s.genera)[0] || {}).genus || '');
   const flavors = en(s.flavor_text_entries);
-  const flavor = flavors.length ? flavors[flavors.length - 1].flavor_text.replace(/[\f\n\r]+/g, ' ') : '';
+  const flavor = flavors.length ? esc(flavors[flavors.length - 1].flavor_text.replace(/[\f\n\r]+/g, ' ')) : '';
   const gen = genOf(id);
   const region = regionById(gen.region);
-  const totalStats = p.stats.reduce((sum, st) => sum + st.base_stat, 0);
+  const totalStats = p.stats.reduce((sum, st) => sum + (Number(st.base_stat) || 0), 0);
   const mult = defenses(p.types.map(t => t.type.name));
   const matchups = [[4, 'Takes ×4 from'], [2, 'Takes ×2 from'], [0.5, 'Takes ×½ from'], [0.25, 'Takes ×¼ from'], [0, 'Immune to']]
     .map(([m, label]) => [label, Object.keys(mult).filter(t => mult[t] === m)])
     .filter(([, types]) => types.length);
-  const cry = p.cries && (p.cries.latest || p.cries.legacy);
+  const cryUrl = p.cries && (p.cries.latest || p.cries.legacy);
+  const cry = typeof cryUrl === 'string' && cryUrl.startsWith('https://raw.githubusercontent.com/PokeAPI/') ? cryUrl : null;
   const stages = chain ? evolutionStages(chain.chain).map(st => st.filter(x => x <= TOTAL)) : [];
   const exclusiveIn = GAMES.flatMap(g => (g.versions || [])
     .filter(v => v.pokemon.includes(id) && !g.versions.every(o => o.pokemon.includes(id)))
@@ -333,7 +361,7 @@ async function pokemonDetail(param) {
               <div class="dato"><small>Weight</small><b>${(p.weight / 10).toFixed(1)} kg</b></div>
               <div class="dato"><small>Generation</small><b>Gen ${gen.n}</b></div>
               <div class="dato"><small>Region</small><b><a href="#/region/${region.id}">${region.name}</a></b></div>
-              <div class="dato"><small>Catch rate</small><b>${s.capture_rate}</b></div>
+              <div class="dato"><small>Catch rate</small><b>${Number(s.capture_rate) || '—'}</b></div>
               <div class="dato"><small>Egg groups</small><b>${s.egg_groups.map(e => prettyName(e.name)).join(', ') || '—'}</b></div>
             </div>
             <h2>Abilities</h2>
@@ -345,9 +373,9 @@ async function pokemonDetail(param) {
           <div class="tarjeta" style="margin-top:16px">
             <h2 style="margin-top:0">Base stats <small style="color:var(--suave)">(total ${totalStats})</small></h2>
             ${p.stats.map(st => {
-              const v = st.base_stat;
+              const v = Number(st.base_stat) || 0;
               const color = v < 60 ? '#f34444' : v < 90 ? '#ffb000' : v < 120 ? '#3fa129' : '#2980ef';
-              return `<div class="stat"><span>${STAT_NAMES[st.stat.name]}</span><b>${v}</b>
+              return `<div class="stat"><span>${has(STAT_NAMES, st.stat.name) ? STAT_NAMES[st.stat.name] : prettyName(st.stat.name)}</span><b>${v}</b>
                 <div class="barra"><div style="width:${Math.min(100, v / 2.55)}%;background:${color}"></div></div></div>`;
             }).join('')}
           </div>
@@ -386,7 +414,11 @@ async function pokemonDetail(param) {
         btn.textContent = shiny ? '🎨 View normal' : '✨ View shiny';
       };
       const cryBtn = document.getElementById('cryBtn');
-      if (cryBtn) cryBtn.onclick = () => { const a = new Audio(cry); a.volume = 0.4; a.play(); };
+      if (cryBtn) cryBtn.onclick = () => {
+        const a = new Audio(cry);
+        a.volume = 0.4;
+        a.play().catch(() => { cryBtn.textContent = '🔇 Cry unavailable'; cryBtn.disabled = true; });
+      };
       document.getElementById('teamBtn').onclick = () => {
         const ids = loadSavedTeam();
         if (ids.length >= TEAM_SIZE && !ids.includes(id)) { alert('Your team is full. Remove a Pokémon first.'); return; }
@@ -611,8 +643,8 @@ const GUIDE_TABS = { walkthrough: 'Walkthrough', locations: 'Routes & wild Poké
 
 async function guideView(id, tab = 'walkthrough') {
   const g = gameById(id);
-  const guide = GUIDES[id];
-  if (!g || !guide || !GUIDE_TABS[tab]) return notFound();
+  const guide = has(GUIDES, id) && GUIDES[id];
+  if (!g || !guide || !has(GUIDE_TABS, tab)) return notFound();
   await loadSpecies().catch(() => {});
 
   const header = `
@@ -672,18 +704,18 @@ async function guideLocations(g, guide, header) {
 
   const sections = regions.map((reg, i) => {
     if (!reg || !reg.locations.length) {
-      return `<h2>${cap(guide.regions[i])}</h2><p class="subtitulo">PokeAPI has no location list for this region.</p>`;
+      return `<h2>${esc(cap(guide.regions[i]))}</h2><p class="subtitulo">PokeAPI has no location list for this region.</p>`;
     }
     const routes = reg.locations.filter(l => routeNum(l.name)).sort((a, b) => routeNum(a.name) - routeNum(b.name));
     const places = reg.locations.filter(l => !routeNum(l.name)).sort((a, b) => placeName(a.name).localeCompare(placeName(b.name)));
     const block = (title, locs) => locs.length ? `
       <h3>${title} <small>(${locs.length})</small></h3>
       ${locs.map(l => `
-        <details class="tarjeta desplegable lugar" data-loc="${l.name}">
+        <details class="tarjeta desplegable lugar" data-loc="${esc(l.name)}">
           <summary>${placeName(l.name)}</summary>
           <div class="cuerpo-lugar"></div>
         </details>`).join('')}` : '';
-    return `<h2>${regionById(reg.name) ? regionById(reg.name).name : cap(reg.name)}</h2>${block('Routes', routes)}${block('Towns, caves & other places', places)}`;
+    return `<h2>${regionById(reg.name) ? regionById(reg.name).name : esc(cap(reg.name))}</h2>${block('Routes', routes)}${block('Towns, caves & other places', places)}`;
   }).join('');
 
   return {
@@ -715,7 +747,7 @@ async function guideLocations(g, guide, header) {
 }
 
 async function locationEncounters(slug, g, guide) {
-  const loc = await api(`/location/${slug}`);
+  const loc = await api(`/location/${encodeURIComponent(slug)}`);
   const areas = await Promise.all(loc.areas.map(a => api(a.url)));
   const labels = versionLabels(g, guide);
 
@@ -787,7 +819,7 @@ function saveTeam(ids) {
 
 const TEAM_GAME_KEY = 'pokeinfo-team-game';
 function loadSavedGame() {
-  try { const g = localStorage.getItem(TEAM_GAME_KEY); return GUIDES[g] ? g : ''; } catch { return ''; }
+  try { const g = localStorage.getItem(TEAM_GAME_KEY); return has(GUIDES, g) ? g : ''; } catch { return ''; }
 }
 function saveGame(gameId) {
   try { localStorage.setItem(TEAM_GAME_KEY, gameId); } catch { /* not remembered */ }
@@ -824,7 +856,7 @@ async function team(param, gameParam) {
   const ids = param === undefined
     ? loadSavedTeam()
     : [...new Set(param.split(',').map(Number))].filter(id => id >= 1 && id <= TOTAL).slice(0, TEAM_SIZE);
-  const gameId = param === undefined ? loadSavedGame() : (GUIDES[gameParam] ? gameParam : '');
+  const gameId = param === undefined ? loadSavedGame() : (has(GUIDES, gameParam) ? gameParam : '');
   saveTeam(ids);
   saveGame(gameId);
   if (param === undefined && (ids.length || gameId)) history.replaceState(null, '', teamHash(ids, gameId));
@@ -865,7 +897,7 @@ async function team(param, gameParam) {
       return { atk, vals, weak: vals.filter(v => v > 1).length, resist: vals.filter(v => v < 1).length };
     });
     const threats = rows.filter(r => r.weak >= 2 && r.weak > r.resist).sort((a, b) => b.weak - a.weak || a.resist - b.resist);
-    const covered = allTypes.filter(def => members.some(m => m.types.some(t => TYPE_CHART[t].double.includes(def))));
+    const covered = allTypes.filter(def => members.some(m => m.types.some(t => has(TYPE_CHART, t) && TYPE_CHART[t].double.includes(def))));
     const uncovered = allTypes.filter(t => !covered.includes(t));
 
     analysis = `
@@ -929,7 +961,7 @@ async function team(param, gameParam) {
         const text = q.value.trim().toLowerCase().replace(/^#0*/, '');
         const id = byName.get(text) || (Number(text) >= 1 && Number(text) <= TOTAL ? Number(text) : null);
         const problem = !id ? 'No Pokémon with that name or number.'
-          : available && !available.has(id) ? `${nameOf(id)} isn't in the ${game.name} regional Pokédex.` : '';
+          : available && !available.has(id) ? `${rawNameOf(id)} isn't in the ${game.name} regional Pokédex.` : '';
         if (problem) { q.setCustomValidity(problem); q.reportValidity(); return; }
         go([...new Set([...ids, id])]);
       };
@@ -984,16 +1016,19 @@ function afterRender(route, keepId) {
   if (h1) { h1.tabIndex = -1; h1.focus({ preventScroll: true }); }
 }
 
+// A malformed link (e.g. "#/pokemon/%E0") must not crash the router.
+const safeDecode = s => { try { return decodeURIComponent(s); } catch { return ''; } };
+
 async function router() {
   const [path] = location.hash.replace(/^#\/?/, '').split('?'); // the query part is read by the page itself
-  const [route = '', ...params] = path.split('/').map(decodeURIComponent);
-  const section = NAV_SECTION[route] || route;
+  const [route = '', ...params] = path.split('/').map(safeDecode);
+  const section = has(NAV_SECTION, route) ? NAV_SECTION[route] : route;
   document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('activo', a.dataset.route === section));
   setMenuOpen(false);
 
   const keepId = app.contains(document.activeElement) ? document.activeElement.id : '';
   const token = ++renderToken;
-  const view = ROUTES[route] || notFound;
+  const view = has(ROUTES, route) ? ROUTES[route] : notFound;
   app.innerHTML = loading();
   window.scrollTo(0, 0);
 
@@ -1008,7 +1043,8 @@ async function router() {
     if (token !== renderToken) return;
     console.error(err);
     app.innerHTML = `<div class="error"><h1>Something went wrong</h1><p>Could not load the data. Check your internet connection and try again.</p>
-      <button class="btn" onclick="router()">Retry</button></div>`;
+      <button class="btn" id="retryBtn">Retry</button></div>`;
+    document.getElementById('retryBtn').onclick = router;
     afterRender(route, keepId);
   }
 }
@@ -1037,5 +1073,15 @@ darkQuery.addEventListener('change', updateThemeBtn); // system theme changed wh
 updateThemeBtn();
 
 document.getElementById('menuBtn').onclick =() => setMenuOpen(!document.getElementById('nav').classList.contains('abierto'));
+// Missing sprite → official artwork (see imgFallback). Image errors don't bubble, so listen in the capture phase.
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (img instanceof HTMLImageElement && img.dataset.fallback) {
+    const src = img.dataset.fallback;
+    delete img.dataset.fallback; // only try once
+    img.src = src;
+  }
+}, true);
+
 window.addEventListener('hashchange', router);
 router();

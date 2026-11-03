@@ -35,6 +35,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* filters hide cards with the hidden attribute; don't let display rules undo it */
 
 body {
   margin: 0;

@@ -350,7 +350,7 @@ const GAMES = [
     differences: ['Same exclusives as the originals.', 'Legendaries from other generations in Ramanas Park depend on the version.'],
   },
   {
-    id: 'legends-arceus', name: 'Pokémon Legends: Arceus', year: 2022, platform: 'Nintendo Switch', gen: 8, region: 'hisui', type: 'Legends',
+    id: 'legends-arceus', name: 'Legends: Arceus', year: 2022, platform: 'Nintendo Switch', gen: 8, region: 'hisui', type: 'Legends',
     cover: [493], mechanic: 'Real-time catching and open areas',
     summary: 'An action-exploration game set in Sinnoh\'s past. There is only one version.',
     features: ['Throw Poké Balls directly in the overworld', 'Agile and Strong battle styles', 'Hisuian forms', 'Noble Pokémon', 'Research tasks for the Pokédex'],
@@ -369,7 +369,7 @@ const GAMES = [
     differences: ['Scarlet has Naranja Academy, Professor Sada and ancient Paradox Pokémon.', 'Violet has Uva Academy, Professor Turo and future Paradox Pokémon.', 'Koraidon in Scarlet, Miraidon in Violet.'],
   },
   {
-    id: 'legends-za', name: 'Pokémon Legends: Z-A', year: 2025, platform: 'Nintendo Switch / Switch 2', gen: 9, region: 'kalos', type: 'Legends',
+    id: 'legends-za', name: 'Legends: Z-A', year: 2025, platform: 'Nintendo Switch / Switch 2', gen: 9, region: 'kalos', type: 'Legends',
     cover: [718], mechanic: 'Real-time battles and Mega Evolution',
     summary: 'Set entirely in Lumiose City during a major redevelopment. There is only one version.',
     features: ['Real-time battles', 'Mega Evolution returns, with new Megas', 'Wild Zones inside the city', 'Enhanced Nintendo Switch 2 Edition'],

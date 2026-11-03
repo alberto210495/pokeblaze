@@ -37,6 +37,7 @@ The site needs internet access to reach [PokeAPI](https://pokeapi.co). Some netw
 ```
 index.html        Page shell: top bar, navigation and script tags
 css/styles.css    All styles (light and dark themes)
+js/theme.js       Applies the saved light/dark theme before the page draws
 js/data.js        Static data: generations, types, type chart, regions, games
 js/guides.js      Hand-written guide data: gyms, Elite Four, key items, gift Pokémon
 js/app.js         The app: hash router, API helper with caching, and every page
@@ -75,6 +76,16 @@ gifts: [{ id: 351, where: 'Weather Institute, Route 119' }],   // id = National 
 Milestones (Gyms, Elite Four and so on) are lists of `{ who, type, where, reward }`. Only `who` is required.
 
 ## Development
+
+### Security rules
+
+The site has no server, logins or user data, so the main risk is someone getting code to run on the page. Three rules keep that out. Please keep them when you change things:
+
+- **Escape outside text.** Anything from PokeAPI or the URL goes through `esc()` (or `prettyName()`, `placeName()`, `nameOf()`, which escape for you) before it is put into HTML. The hand-written text in `data.js` and `guides.js` is trusted and must not contain HTML.
+- **No inline code.** No `<script>` blocks in the HTML and no `onclick="…"` or `onerror="…"` attributes. Attach event handlers from JavaScript instead.
+- **Keep the Content Security Policy up to date.** The `<meta http-equiv="Content-Security-Policy">` tag in `index.html` lists every site the page may load from. If you add a new image host, font or API, add it there or the browser will block it.
+
+`api()` also refuses to fetch anything outside PokeAPI, and lookups that use values from the URL go through `has()`, so names like `constructor` can't match built-in object members.
 
 ### Linting
 
