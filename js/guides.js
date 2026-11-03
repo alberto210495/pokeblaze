@@ -264,12 +264,44 @@ const alolaLeague = (first, finalFoe) => ({
   ],
 });
 
+// Alola has no HMs: Ride Pager Pokémon take their place. The Ride Pager comes from Hala after his Grand Trial.
+const ALOLA_RIDES = [
+  { name: 'Ride Pager: Tauros', where: 'Kahuna Hala, Iki Town (after beating him)' },
+  { name: 'Ride Pager: Stoutland', where: 'Mallow, Paniola Ranch' },
+  { name: 'Ride Pager: Lapras', where: 'Lana, Brooklet Hill' },
+  { name: 'Ride Pager: Charizard', where: "Kiawe, Wela Volcano Park (after his trial)" },
+  { name: 'Ride Pager: Mudsdale', where: 'Hapu, Route 12' },
+  { name: 'Ride Pager: Sharpedo', where: 'Grimsley, Route 15' },
+  { name: 'Ride Pager: Machamp', where: "Hapu's grandmother, Ancient Poni Path" },
+];
+
 const ALOLA_ITEMS = [
   { name: 'Z-Ring', where: 'Kahuna Hala, Iki Town (Melemele Island)' },
+  ...ALOLA_RIDES,
+];
+
+const USUM_ITEMS = [
+  { name: 'Z-Ring', where: 'Kahuna Hala, Iki Town (Melemele Island)' },
+  ...ALOLA_RIDES.slice(0, 1),
+  { name: 'Ride Pager: Mantine', where: "Kahuna Hala (after his Grand Trial; used for Mantine Surf between islands)" },
+  ...ALOLA_RIDES.slice(1),
 ];
 
 const ALOLA_GIFTS = [
+  { id: 133, where: 'Pokémon Nursery, Paniola Ranch (Egg, on your first visit)' },
+  { id: 142, where: 'Ace Trainer on the Huntail boat, Seafolk Village' },
   { id: 772, where: 'Gladion, Aether Paradise (post-game)' },
+  { id: 137, where: 'Aether House, Route 15 (post-game)' },
+];
+
+const USUM_GIFTS = [
+  { id: 133, where: 'Pokémon Nursery, Paniola Ranch (Egg, on your first visit)' },
+  { id: 142, where: 'Ace Trainer on the Huntail boat, Seafolk Village' },
+  { id: 25, where: 'Surfing Association, Heahea City (top score on all four Mantine Surf courses; knows Surf)' },
+  { id: 803, where: 'Ultra Recon Squad, Ultra Megalopolis (after beating Ultra Necrozma)' },
+  { id: 772, where: 'Wicke, Ancient Poni Path (after the Elite Four; sent by Gladion)' },
+  { id: 137, where: 'Aether House, Route 15 (after defeating Team Rainbow Rocket)' },
+  { id: 718, where: 'Dexio & Sina, Route 16 (post-game: catch Zygarde in Resolution Cave first, then beat Dexio)' },
 ];
 
 const GUIDES = {
@@ -512,7 +544,20 @@ const GUIDES = {
       ],
     }],
     items: [
+      { name: 'Exp. Share', where: 'Santalune City' },
+      { name: 'Roller Skates', where: 'Santalune City' },
+      { name: 'Holo Caster', where: 'Route 22' },
+      { name: 'HM01 Cut', where: 'Parfum Palace' },
+      { name: 'Poké Flute', where: 'Parfum Palace (wakes the Snorlax on Route 7)' },
+      { name: 'Old Rod', where: 'Ambrette Town' },
+      { name: 'HM04 Strength', where: 'Cyllage City' },
       { name: 'Mega Ring', where: 'Korrina, Tower of Mastery (Shalour City)' },
+      { name: 'HM03 Surf', where: 'Shalour City' },
+      { name: 'HM02 Fly', where: 'Coumarine City' },
+      { name: 'Good Rod', where: 'Coumarine City' },
+      { name: 'Power Plant Pass', where: 'Route 13' },
+      { name: 'Super Rod', where: 'Route 16' },
+      { name: 'HM05 Waterfall', where: 'Route 19' },
     ],
     gifts: [
       { id: 1, where: "Professor Sycamore's lab, Lumiose City (pick one Kanto starter)" },
@@ -530,7 +575,7 @@ const GUIDES = {
   'ultra-sun-moon': {
     versions: ['ultra-sun', 'ultra-moon'], regions: ['alola'],
     milestones: [ALOLA_TRIALS, ALOLA_GRAND_TRIALS, alolaLeague('Molayne', 'Hau')],
-    items: ALOLA_ITEMS, gifts: ALOLA_GIFTS,
+    items: USUM_ITEMS, gifts: USUM_GIFTS,
   },
   'sword-shield': {
     versions: ['sword', 'shield'], regions: ['galar'],
@@ -548,9 +593,27 @@ const GUIDES = {
     }, { title: 'Champion Cup', list: [{ who: 'Leon', where: 'Wyndon Stadium', reward: 'Champion' }] }],
     items: [
       { name: 'Dynamax Band', where: 'Professor Magnolia, at her house near Wedgehurst' },
+      { name: 'Camping Gear', where: 'Wedgehurst' },
+      { name: 'Rotom Bike', where: 'Route 5' },
+      { name: 'Hi-tech Earbuds', where: 'Motostoke' },
+      { name: 'Rotom Catalog', where: 'Wyndon' },
+      { name: 'Shiny Charm', where: 'Circhester (post-game, for completing the Galar Pokédex)' },
+      { name: 'Exp. Charm', where: 'Master Dojo, Isle of Armor (Isle of Armor DLC)' },
+      { name: 'Reins of Unity', where: 'Freezington, Crown Tundra (Crown Tundra DLC)' },
     ],
     gifts: [
       { id: 848, where: 'Pokémon Nursery worker, Route 5 (Egg)' },
+      { id: 880, where: 'Fossil reviver, Route 6 (Fossilized Bird + Fossilized Drake)' },
+      { id: 881, where: 'Fossil reviver, Route 6 (Fossilized Bird + Fossilized Dino)' },
+      { id: 882, where: 'Fossil reviver, Route 6 (Fossilized Fish + Fossilized Drake)' },
+      { id: 883, where: 'Fossil reviver, Route 6 (Fossilized Fish + Fossilized Dino)' },
+      { id: 25, where: "Wild Area Station (needs Let's Go, Pikachu! save data on the Switch)" },
+      { id: 133, where: "Wild Area Station (needs Let's Go, Eevee! save data on the Switch)" },
+      { id: 772, where: 'League staff, Battle Tower (after becoming Champion)' },
+      { id: 4, where: "Leon's room, Postwick (after becoming Champion)" },
+      { id: 891, where: "Mustard, Master Dojo (after all of his trials; Isle of Armor DLC)" },
+      { id: 789, where: 'Freezington (after saving the village; Crown Tundra DLC)' },
+      { id: 803, where: 'Max Lair (Ultra Beast Dynamax Adventures; Crown Tundra DLC)' },
     ],
   },
   'scarlet-violet': {
