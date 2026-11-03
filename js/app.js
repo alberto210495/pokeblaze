@@ -1013,6 +1013,29 @@ async function router() {
   }
 }
 
-document.getElementById('menuBtn').onclick = () => setMenuOpen(!document.getElementById('nav').classList.contains('abierto'));
+// ---------- Theme ----------
+// index.html applies the saved choice before the page draws; with no choice, the CSS follows the system.
+
+const THEME_KEY = 'pokeinfo-theme';
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+const themeBtn = document.getElementById('themeBtn');
+const currentTheme = () => document.documentElement.dataset.theme || (darkQuery.matches ? 'dark' : 'light');
+
+function updateThemeBtn() {
+  const dark = currentTheme() === 'dark';
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+  themeBtn.title = dark ? 'Switch to light theme' : 'Switch to dark theme';
+  themeBtn.setAttribute('aria-label', themeBtn.title);
+}
+themeBtn.onclick = () => {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem(THEME_KEY, next); } catch { /* choice just won't be remembered */ }
+  updateThemeBtn();
+};
+darkQuery.addEventListener('change', updateThemeBtn); // system theme changed while no choice is saved
+updateThemeBtn();
+
+document.getElementById('menuBtn').onclick =() => setMenuOpen(!document.getElementById('nav').classList.contains('abierto'));
 window.addEventListener('hashchange', router);
 router();

@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PokéInfo</title>
   <meta name="description" content="Information about every Pokémon, region and game in the series.">
+  <script>
+    // Apply a saved theme before the page draws, so there's no flash of the wrong theme.
+    try { var t = localStorage.getItem('pokeinfo-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
@@ -15,7 +19,6 @@
       <span class="pokeball" aria-hidden="true"></span>
       PokéInfo
     </a>
-    <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
     <nav id="nav">
       <a href="#/" data-route="">Home</a>
       <a href="#/pokedex" data-route="pokedex">Pokédex</a>
@@ -25,6 +28,8 @@
       <a href="#/team" data-route="team">Team</a>
       <a href="#/compare" data-route="compare">Compare</a>
     </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch theme"></button>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
   </header>
 
   <main id="app"></main>

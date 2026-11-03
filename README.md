@@ -16,6 +16,7 @@ It is a plain HTML, CSS and JavaScript site. There is no framework and no build 
   - *Routes & wild Pokémon*: every location, with which Pokémon appear, how, at what level and how often
   - *Items & gifts*: key items and HMs with where to get them, plus gift Pokémon
 - **Team builder**: pick up to 6 Pokémon to see shared weaknesses, biggest threats and offensive type coverage. You can limit it to one game's Pokédex. Teams are saved in the browser and can be shared by link.
+- **Light and dark themes**: follows the system setting, or pick one with the button in the top bar (remembered in the browser).
 
 ## Running it
 
