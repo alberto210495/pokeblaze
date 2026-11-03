@@ -59,7 +59,8 @@ PokeAPI responses are cached in the browser for 7 days, so pages you have visite
 **Known gaps**
 
 - PokeAPI's encounter data is thorough for the older games but patchy or missing for newer ones. Those locations show "No wild Pokémon recorded".
-- Key items and gift Pokémon are still empty for Legends: Arceus, Black & White, Black 2 & White 2 and Scarlet & Violet. Legends: Z-A has no guide data at all yet.
+- Legends: Z-A has no key-item list: its key items are side-mission props, not story items. Legends: Arceus lists only its starters as gift Pokémon.
+- In Legends: Arceus and Scarlet & Violet, the items tab lists ride Pokémon and ride abilities, which take the place of HMs.
 - The team builder uses the modern type chart. A few matchups were different in older games.
 
 ### Adding guide data
