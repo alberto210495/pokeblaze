@@ -57,7 +57,9 @@ async function writeStored(url, data) {
 
 const TIMEOUT = 15000; // give up on a request after 15 s instead of showing "Loading…" forever
 
-function api(url) {
+// `pick`, if given, trims a response before it is cached (used for big records like moves).
+// Always call the same URL with the same pick.
+function api(url, pick) {
   const full = url.startsWith('http') ? url : API + url;
   // Only ever talk to PokeAPI, even if a response contains a link somewhere else.
   if (!full.startsWith(API + '/')) return Promise.reject(new Error(`Blocked request to ${full}`));
@@ -66,7 +68,7 @@ function api(url) {
     const req = readStored(full)
       .then(saved => saved || fetch(full, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-        .then(data => { writeStored(full, data); return data; }))
+        .then(data => { const kept = pick ? pick(data) : data; writeStored(full, kept); return kept; }))
       .catch(err => { cache.delete(full); throw err; });
     cache.set(full, req);
   }
@@ -400,6 +402,12 @@ async function pokemonDetail(param) {
       <h2>Where to find</h2>
       <div id="donde">${loading('Loading locations…')}</div>
 
+      <h2>Moves</h2>
+      <details class="tarjeta desplegable" id="movesBox">
+        <summary>Show the moves ${name} can learn <small>by game: level-up, TM/HM, egg and tutor</small></summary>
+        <div class="cuerpo-lugar" id="moves"></div>
+      </details>
+
       <div class="navpoke">
         ${id > 1 ? `<a class="btn sec" href="#/pokemon/${id - 1}">← ${pad(id - 1)} ${nameOf(id - 1)}</a>` : '<span></span>'}
         ${id < TOTAL ? `<a class="btn sec" href="#/pokemon/${id + 1}">${nameOf(id + 1)} ${pad(id + 1)} →</a>` : ''}
@@ -425,8 +433,154 @@ async function pokemonDetail(param) {
         location.hash = teamHash([...new Set([...ids, id])], loadSavedGame());
       };
       loadWhereToFind(id);
+      const movesBox = document.getElementById('movesBox');
+      movesBox.addEventListener('toggle', () => {
+        if (movesBox.open && !movesBox.dataset.loaded) { movesBox.dataset.loaded = '1'; renderMoves(p); }
+      });
     },
   };
+}
+
+// ---------- Moves ----------
+// The move list for every game comes with /pokemon/{id}. Type, power and so on need one /move request
+// per move, so they are only fetched for the tab being shown (a few at a time) and cached trimmed.
+
+const MOVE_TABS = { 'level-up': 'Level-up', machine: 'TM / HM', egg: 'Egg moves', tutor: 'Tutor' };
+const VG_LIST = GAMES.filter(g => has(VERSION_GROUPS, g.id)).map(g => ({ vg: VERSION_GROUPS[g.id], game: g })); // oldest first
+// Before Gen 4, a damaging move was physical or special depending on its type.
+const PHYSICAL_TYPES = new Set(['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel']);
+const CATEGORY = { physical: 'Physical', special: 'Special', status: 'Status' };
+const movesView = { vg: '', tab: 'level-up' }; // remembered while browsing, so the next Pokémon opens the same way
+
+// Full move records are 50–120 KB (mostly the list of every Pokémon that learns them); keep only what the table shows.
+const slimMove = m => ({
+  name: ((m.names || []).find(n => n.language.name === 'en') || {}).name || rawPretty(m.name),
+  type: m.type && m.type.name,
+  cls: m.damage_class && m.damage_class.name,
+  power: m.power, accuracy: m.accuracy, pp: m.pp,
+  past: (m.past_values || []).map(v => ({ vg: v.version_group.name, type: v.type && v.type.name, power: v.power, accuracy: v.accuracy, pp: v.pp })),
+});
+const moveInfo = slug => api(`/move/${encodeURIComponent(slug)}`, slimMove);
+
+// A move's stats as they were in one game. PokeAPI's past values hold what applied *before* their version group,
+// so apply every change made after this game, newest first, over the current values.
+function moveAsOf(m, vgIndex, gen) {
+  const out = { type: m.type, power: m.power, accuracy: m.accuracy, pp: m.pp };
+  m.past
+    .map(v => ({ ...v, i: VG_LIST.findIndex(x => x.vg === v.vg) }))
+    .filter(v => v.i > vgIndex)
+    .sort((a, b) => b.i - a.i)
+    .forEach(v => { for (const k of ['type', 'power', 'accuracy', 'pp']) if (v[k] != null) out[k] = v[k]; });
+  out.cls = m.cls !== 'status' && gen < 4 ? (PHYSICAL_TYPES.has(out.type) ? 'physical' : 'special') : m.cls;
+  return out;
+}
+
+// Moves a Pokémon learns in one version group, by method.
+function learnset(p, vg) {
+  const out = Object.fromEntries(Object.keys(MOVE_TABS).map(k => [k, []]));
+  for (const m of p.moves || []) {
+    for (const d of m.version_group_details) {
+      const method = d.move_learn_method.name;
+      if (d.version_group.name !== vg || !has(out, method)) continue;
+      const level = Number(d.level_learned_at) || 0;
+      if (method === 'level-up' || !out[method].some(x => x.slug === m.move.name)) out[method].push({ slug: m.move.name, level });
+    }
+  }
+  return out;
+}
+
+// Run fn over items with at most `limit` requests in flight; failures become null.
+async function mapLimit(items, limit, fn, onDone) {
+  const results = new Array(items.length);
+  let next = 0, done = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i]).catch(() => null);
+      if (onDone) onDone(++done);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
+let movesToken = 0;
+function renderMoves(p, focusSelector) {
+  const box = document.getElementById('moves');
+  if (!box) return;
+  const inGames = new Set((p.moves || []).flatMap(m => m.version_group_details.map(d => d.version_group.name)));
+  const options = VG_LIST.filter(x => inGames.has(x.vg)).reverse(); // newest first
+  if (!options.length) { box.innerHTML = '<p class="subtitulo">PokeAPI has no move data for this Pokémon.</p>'; return; }
+  if (!options.some(x => x.vg === movesView.vg)) movesView.vg = options[0].vg;
+
+  const sets = learnset(p, movesView.vg);
+  if (!sets[movesView.tab].length) movesView.tab = Object.keys(MOVE_TABS).find(k => sets[k].length) || 'level-up';
+
+  box.innerHTML = `
+    <div class="filtros" style="margin:12px 0 4px">
+      <select id="movesGame" aria-label="Game">
+        ${options.map(x => `<option value="${x.vg}" ${x.vg === movesView.vg ? 'selected' : ''}>${x.game.name} (${x.game.year})</option>`).join('')}
+      </select>
+    </div>
+    <div class="pestanas" role="group" aria-label="How the move is learned">
+      ${Object.entries(MOVE_TABS).map(([k, label]) => `
+        <button type="button" data-tab="${k}" class="${k === movesView.tab ? 'activa' : ''}" aria-pressed="${k === movesView.tab}" ${sets[k].length ? '' : 'disabled'}>
+          ${label} <small>(${sets[k].length})</small>
+        </button>`).join('')}
+    </div>
+    <div id="movesTable"></div>`;
+
+  document.getElementById('movesGame').onchange = e => { movesView.vg = e.target.value; renderMoves(p, '#movesGame'); };
+  box.querySelectorAll('.pestanas button').forEach(b => {
+    b.onclick = () => { movesView.tab = b.dataset.tab; renderMoves(p, `[data-tab="${b.dataset.tab}"]`); };
+  });
+  // Redrawing replaced the control that was used; give it focus back for keyboard users.
+  const again = focusSelector && box.querySelector(focusSelector);
+  if (again && !again.disabled) again.focus();
+  renderMoveTable(sets[movesView.tab], movesView.tab, movesView.vg);
+}
+
+async function renderMoveTable(rows, tab, vg) {
+  const table = document.getElementById('movesTable');
+  if (!rows.length) { table.innerHTML = '<p class="subtitulo">No moves learned this way in this game.</p>'; return; }
+  const token = ++movesToken;
+  table.innerHTML = loading(`Loading ${rows.length} moves…`);
+
+  const slugs = [...new Set(rows.map(r => r.slug))];
+  const infos = await mapLimit(slugs, 6, moveInfo, done => {
+    if (token === movesToken && table.isConnected) table.firstElementChild.textContent = `Loading moves… ${done}/${slugs.length}`;
+  });
+  if (token !== movesToken || !table.isConnected) return; // another game, tab or page took over
+
+  const vgIndex = VG_LIST.findIndex(x => x.vg === vg);
+  const gen = VG_LIST[vgIndex].game.gen;
+  const bySlug = new Map(slugs.map((s, i) => [s, infos[i] && { name: infos[i].name, ...moveAsOf(infos[i], vgIndex, gen) }]));
+  const full = rows.map(r => ({ ...r, info: bySlug.get(r.slug) }));
+  const nameOfMove = r => (r.info ? r.info.name : rawPretty(r.slug));
+  full.sort((a, b) => (tab === 'level-up' ? a.level - b.level : 0) || nameOfMove(a).localeCompare(nameOfMove(b)));
+
+  const dash = v => (v == null ? '—' : esc(Number(v)));
+  const failed = full.filter(r => !r.info).length;
+  table.innerHTML = `
+    <div class="tabla-wrap">
+      <table class="encuentros movimientos">
+        <thead><tr>${tab === 'level-up' ? '<th>Lv.</th>' : ''}<th>Move</th><th>Type</th><th>Category</th><th>Power</th><th>Acc.</th><th>PP</th></tr></thead>
+        <tbody>${full.map(r => `
+          <tr>
+            ${tab === 'level-up' ? `<td>${r.level === 0 ? 'Evo' : r.level}</td>` : ''}
+            <td><b>${esc(nameOfMove(r))}</b></td>
+            <td>${r.info && r.info.type ? typeBadge(r.info.type) : '—'}</td>
+            <td>${r.info && has(CATEGORY, r.info.cls) ? CATEGORY[r.info.cls] : '—'}</td>
+            <td>${r.info ? dash(r.info.power) : '—'}</td>
+            <td>${r.info ? (r.info.accuracy == null ? '—' : `${dash(r.info.accuracy)}%`) : '—'}</td>
+            <td>${r.info ? dash(r.info.pp) : '—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${tab === 'level-up' && full.some(r => r.level === 0) ? '<p class="nota">Evo: learned when it evolves into this Pokémon.</p>' : ''}
+    ${failed ? `<p class="nota">Details for ${failed} move${failed > 1 ? 's' : ''} couldn't be loaded. Close and reopen Moves to retry.</p>` : ''}
+    <p class="nota">Power, accuracy and type are shown as they were in this game. "—" means it has no fixed value.</p>`;
 }
 
 async function loadWhereToFind(id) {

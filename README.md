@@ -8,7 +8,7 @@ It is a plain HTML, CSS and JavaScript site. There is no framework and no build 
 
 ## Features
 
-- **Pokédex**: all 1025 Pokémon, searchable by name or number and filterable by generation and type. Each Pokémon has stats, abilities, evolutions, its shiny form, its cry, type effectiveness and where to find it in each game.
+- **Pokédex**: all 1025 Pokémon, searchable by name or number and filterable by generation and type. Each Pokémon has stats, abilities, evolutions, its shiny form, its cry, type effectiveness, where to find it in each game, and the moves it learns in each game (level-up, TM/HM, egg and tutor), with type, category, power, accuracy and PP as they were in that game.
 - **Regions**: Kanto to Paldea (plus Hisui), with real-world inspiration, professor, starters and legendaries.
 - **Games**: every main-series game with its new features and version exclusives, plus a side-by-side comparison of any two games.
 - **Game guides**, one per game:
