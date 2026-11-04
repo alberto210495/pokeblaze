@@ -118,7 +118,7 @@ async function renderHomeNews() {
     const news = await loadNews();
     if (!box.isConnected || !news.items.length) { box.remove(); return; }
     box.innerHTML = `
-      <h2>📰 ${tr('Latest news')} <a class="chip" href="#/news">${tr('All news')} →</a></h2>
+      <h2>${icon('news')} ${tr('Latest news')} <a class="chip" href="#/news">${tr('All news')} →</a></h2>
       <div class="noticias-inicio">${news.items.slice(0, 4).map(it => `
         <a class="tarjeta noticia-corta" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer">
           <small>${esc(sourceName(news, it.source))} · ${esc(dayText(it.date))}</small>

@@ -55,7 +55,7 @@ function ownButton(c, big = false) {
     data-n="${cardText(c.name)}" data-l="${cardText(c.localId)}" data-i="${esc(tcgAsset(c.image, '') || '')}" ${big ? 'data-big="1"' : ''}
     aria-pressed="${owned}" ${big ? '' : `aria-label="${label}" title="${owned ? tr('In my collection') : tr('Add to my collection')}"`}>${ownLabel(owned, big)}</button>`;
 }
-const ownLabel = (owned, big) => (big ? (owned ? `✅ ${tr('In my collection')}` : `➕ ${tr('Add to my collection')}`) : (owned ? '✓' : '+'));
+const ownLabel = (owned, big) => (big ? `${icon(owned ? 'check' : 'plus')} ${tr(owned ? 'In my collection' : 'Add to my collection')}` : icon(owned ? 'check' : 'plus'));
 
 // One listener for every ✓ button on the page.
 document.addEventListener('click', e => {
@@ -74,7 +74,7 @@ document.addEventListener('click', e => {
     if (b.dataset.own !== id) return;
     b.classList.toggle('si', owned);
     b.setAttribute('aria-pressed', String(owned));
-    b.textContent = ownLabel(owned, Boolean(b.dataset.big));
+    b.innerHTML = ownLabel(owned, Boolean(b.dataset.big));
     if (!b.dataset.big) b.title = owned ? tr('In my collection') : tr('Add to my collection');
   });
   window.dispatchEvent(new Event('pokeinfo:collection'));
@@ -118,17 +118,17 @@ async function collectionView() {
         <div class="cifra"><b>${complete}</b><span>${tr('Sets complete')}</span></div>
       </div>
       <div class="filtros">
-        <button type="button" class="btn sec" id="colExport" ${col.size ? '' : 'disabled'}>📥 ${tr('Download backup')}</button>
-        <label class="btn sec" for="colImport">📤 ${tr('Restore from backup')}</label>
+        <button type="button" class="btn sec" id="colExport" ${col.size ? '' : 'disabled'}>${icon('download')} ${tr('Download backup')}</button>
+        <label class="btn sec" for="colImport">${icon('upload')} ${tr('Restore from backup')}</label>
         <input type="file" id="colImport" accept="application/json,.json" hidden>
-        ${col.size ? `<button type="button" class="btn sec" id="colClear">🗑️ ${tr('Clear collection')}</button>` : ''}
+        ${col.size ? `<button type="button" class="btn sec" id="colClear">${icon('trash')} ${tr('Clear collection')}</button>` : ''}
       </div>
       <p class="nota" id="colMsg" aria-live="polite"></p>
       ${!col.size ? `
         <div class="tarjeta aviso-vacio">
           <h2>${tr('Your collection is empty')}</h2>
           <p>${tr('Open any set and tick the cards you own.')}</p>
-          <a class="btn" href="#/cards">🃏 ${tr('Browse sets')}</a>
+          <a class="btn" href="#/cards">${icon('cards')} ${tr('Browse sets')}</a>
         </div>` : groups.map(g => `
         <section class="linea-gen">
           <h2><a href="#/cards/set/${esc(g.setId)}">${cardText(g.name)}</a> <small>${g.total ? `${g.cards.length}/${g.total}` : g.cards.length}</small></h2>

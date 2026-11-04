@@ -4,10 +4,10 @@
 //
 // Site files are fetched from the network first, so a new version shows up right away; the saved copy is
 // only used when the network fails. Bump SHELL when the list of files below changes.
-const SHELL = 'pokeinfo-shell-v1';
+const SHELL = 'pokeinfo-shell-v2';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/styles.css',
-  'js/theme.js', 'js/data.js', 'js/guides.js', 'js/names.js', 'js/i18n.js',
+  'js/theme.js', 'js/data.js', 'js/guides.js', 'js/names.js', 'js/i18n.js', 'js/icons.js',
   'js/cards.js', 'js/collection.js', 'js/news.js', 'js/app.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];

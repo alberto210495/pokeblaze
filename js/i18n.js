@@ -500,4 +500,19 @@ const ES = {
   // Offline and install
   'Install app': 'Instalar la app',
   "You're offline. Pages and data you have already opened still work.": 'Estás sin conexión. Las páginas y los datos que ya has abierto siguen funcionando.',
+  // Redesign: menu, home page and Pokémon page tabs
+  'Tools': 'Herramientas',
+  'Explore': 'Explorar',
+  'Your tools': 'Tus herramientas',
+  'Your guide to the Pokémon world: every Pokémon, game, guide and trading card, plus tools for your team, your Nuzlocke runs and your card collection.':
+    'Tu guía del mundo Pokémon: todos los Pokémon, juegos, guías y cartas, y herramientas para tu equipo, tus retos Nuzlocke y tu colección de cartas.',
+  'Search Pokémon, games, regions, cards…': 'Busca Pokémon, juegos, regiones, cartas…',
+  'Search the site': 'Buscar en la web',
+  'Search cards for “{q}”': 'Buscar cartas de «{q}»',
+  'Search the Pokédex for “{q}”': 'Buscar «{q}» en la Pokédex',
+  'Pokémon of the day': 'Pokémon del día',
+  'Tick the trading cards you own and see your progress in every set.': 'Marca las cartas que tienes y mira tu progreso en cada expansión.',
+  'Sections': 'Secciones',
+  'Overview': 'Resumen',
+  'About': 'Datos',
 };

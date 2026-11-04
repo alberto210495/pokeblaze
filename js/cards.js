@@ -181,7 +181,7 @@ async function cardsView(sub, setId) {
     const logo = tcgAsset(info.logo, '.webp');
     return `
       <a class="tarjeta set" href="#/cards/set/${esc(s.id)}">
-        ${logo ? `<img loading="lazy" src="${logo}" alt="">` : '<div class="set-sin">🃏</div>'}
+        ${logo ? `<img loading="lazy" src="${logo}" alt="">` : `<div class="set-sin">${icon('cards')}</div>`}
         <b>${cardText(info.name)}</b>
         <small>${tr('{n} cards', { n: Number(info.cardCount && info.cardCount.total) || 0 })}</small>
       </a>`;
@@ -190,7 +190,7 @@ async function cardsView(sub, setId) {
   return {
     html: `
       <h1>${tr('Trading cards')}</h1>
-      <p><a class="btn sec" href="#/collection">📒 ${tr('My collection')} (${loadCollection().size})</a></p>
+      <p><a class="btn sec" href="#/collection">${icon('collection')} ${tr('My collection')} (${loadCollection().size})</a></p>
       <p class="subtitulo">${tr('Every set of the Pokémon Trading Card Game, from Base Set (1999) to today: {sets} sets and {cards} cards. Card data and prices come from TCGdex.', { sets: totalSets, cards: totalCards.toLocaleString(LANG) })}</p>
       <form class="filtros" id="cardSearch" role="search">
         <input id="cardQ" type="search" placeholder="${tr('Search cards: Charizard, Professor Oak…')}" aria-label="${tr('Search cards by name')}" value="${esc(q)}" maxlength="50">
@@ -228,7 +228,7 @@ async function cardSetView(setId) {
   const symbol = tcgAsset(set.symbol, '.webp');
   const count = set.cardCount || {};
   const legal = set.legal || {};
-  const yes = v => (v ? '✅' : '—');
+  const yes = v => (v ? icon('check') : '—');
 
   return {
     html: `
@@ -375,8 +375,8 @@ async function cardView(cardId) {
         ${row(tr('Energy type'), c.energyType ? cardText(c.energyType) : '')}
         ${row(tr('Pokédex'), list(c.dexId).filter(n => Number.isInteger(n) && n >= 1 && n <= TOTAL).map(n => `<a href="#/pokemon/${n}">${pad(n)} ${nameOf(n)}</a>`).join(', '))}
         ${row(tr('Regulation mark'), c.regulationMark ? cardText(c.regulationMark) : '')}
-        ${row(tr('Standard format'), c.legal ? (c.legal.standard ? `✅ ${tr('Legal')}` : `— ${tr('Not legal')}`) : '')}
-        ${row(tr('Expanded format'), c.legal ? (c.legal.expanded ? `✅ ${tr('Legal')}` : `— ${tr('Not legal')}`) : '')}
+        ${row(tr('Standard format'), c.legal ? (c.legal.standard ? `${icon('check')} ${tr('Legal')}` : `— ${tr('Not legal')}`) : '')}
+        ${row(tr('Expanded format'), c.legal ? (c.legal.expanded ? `${icon('check')} ${tr('Legal')}` : `— ${tr('Not legal')}`) : '')}
       </tbody>
     </table>`;
 
@@ -445,7 +445,7 @@ async function cardView(cardId) {
       </div>
       <div>
         <h1>${cardText(c.name)}</h1>
-        <p>${ownButton(c, true)} <a class="btn sec" href="#/collection">📒 ${tr('My collection')}</a></p>
+        <p>${ownButton(c, true)} <a class="btn sec" href="#/collection">${icon('collection')} ${tr('My collection')}</a></p>
         ${c.description ? `<p class="subtitulo"><i>${cardText(c.description)}</i></p>` : ''}
         ${facts}
         ${battle}

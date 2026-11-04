@@ -6,7 +6,7 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 // Same order as the <script> tags in index.html.
-const SCRIPTS = ['js/data.js', 'js/guides.js', 'js/names.js', 'js/i18n.js', 'js/cards.js', 'js/collection.js', 'js/news.js', 'js/app.js'];
+const SCRIPTS = ['js/data.js', 'js/guides.js', 'js/names.js', 'js/i18n.js', 'js/icons.js', 'js/cards.js', 'js/collection.js', 'js/news.js', 'js/app.js'];
 
 // A do-nothing page element: enough for the site's start-up code to run.
 function fakeElement() {

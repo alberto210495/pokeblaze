@@ -25,16 +25,27 @@
       <span class="pokeball" aria-hidden="true"></span>
       PokéInfo
     </a>
-    <nav id="nav">
+    <nav id="nav" aria-label="Main">
       <a href="#/pokedex" data-route="pokedex">Pokédex</a>
-      <a href="#/regions" data-route="regions" data-i18n="Regions">Regions</a>
-      <a href="#/games" data-route="games" data-i18n="Games">Games</a>
-      <a href="#/guides" data-route="guides" data-i18n="Guides">Guides</a>
-      <a href="#/team" data-route="team" data-i18n="Team">Team</a>
-      <a href="#/nuzlocke" data-route="nuzlocke" data-i18n="Nuzlocke">Nuzlocke</a>
+      <div class="grupo">
+        <button type="button" class="grupo-btn" aria-expanded="false" aria-controls="menuGames"><span data-i18n="Games">Games</span> <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="submenu" id="menuGames">
+          <a href="#/regions" data-route="regions" data-i18n="Regions">Regions</a>
+          <a href="#/games" data-route="games" data-i18n="Games">Games</a>
+          <a href="#/guides" data-route="guides" data-i18n="Guides">Guides</a>
+          <a href="#/compare" data-route="compare" data-i18n="Compare">Compare</a>
+        </div>
+      </div>
+      <div class="grupo">
+        <button type="button" class="grupo-btn" aria-expanded="false" aria-controls="menuTools"><span data-i18n="Tools">Tools</span> <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="submenu" id="menuTools">
+          <a href="#/team" data-route="team" data-i18n="Team builder">Team builder</a>
+          <a href="#/nuzlocke" data-route="nuzlocke" data-i18n="Nuzlocke">Nuzlocke</a>
+          <a href="#/collection" data-route="collection" data-i18n="My collection">My collection</a>
+        </div>
+      </div>
       <a href="#/cards" data-route="cards" data-i18n="Cards">Cards</a>
       <a href="#/news" data-route="news" data-i18n="News">News</a>
-      <a href="#/compare" data-route="compare" data-i18n="Compare">Compare</a>
     </nav>
     <button class="theme-btn" id="langBtn" type="button" aria-label="Cambiar a español">ES</button>
     <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch theme"></button>
@@ -54,6 +65,7 @@
   <script src="js/guides.js"></script>
   <script src="js/names.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/icons.js"></script>
   <script src="js/cards.js"></script>
   <script src="js/collection.js"></script>
   <script src="js/news.js"></script>

@@ -46,6 +46,7 @@ css/styles.css    All styles (light and dark themes)
 js/theme.js       Applies the saved light/dark theme before the page draws
 js/data.js        Static data: generations, types, type chart, regions, games
 js/guides.js      Hand-written guide data: gyms, Elite Four, key items, gift Pokémon
+js/icons.js       The site's icons (one matching set of line drawings)
 js/cards.js       Trading card pages (sets, cards, search), using TCGdex
 js/news.js        News page and the home page's latest headlines
 js/collection.js  Card collection checklist (#/collection) and the ✓ buttons on cards
@@ -61,7 +62,7 @@ tools/fetch-news.js   Collects news headlines into news.json (run by the GitHub 
 tests/            Automated tests (see "Testing" below)
 ```
 
-Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `#/guide/red-blue/locations`, `#/nuzlocke/emerald`, `#/cards/set/base1`, `#/card/base1-4` or `#/team/6.flamethrower.air-slash,25.thunderbolt/red-blue` (each team member is its Pokédex number followed by its moves). Pokédex filters are kept in the URL too, as in `#/pokedex?gen=3&type=water&q=mud`, so a filtered view can be bookmarked or shared. The full route list is at the top of `js/app.js`.
+Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `#/guide/red-blue/locations`, `#/pokemon/6/moves` (a Pokémon page opened on a tab), `#/nuzlocke/emerald`, `#/cards/set/base1`, `#/card/base1-4` or `#/team/6.flamethrower.air-slash,25.thunderbolt/red-blue` (each team member is its Pokédex number followed by its moves). Pokédex filters are kept in the URL too, as in `#/pokedex?gen=3&type=water&q=mud`, so a filtered view can be bookmarked or shared. The full route list is at the top of `js/app.js`.
 
 ## Where the data comes from
 

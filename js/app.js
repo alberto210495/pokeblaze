@@ -136,7 +136,7 @@ const typeText = t => (isEs() && lookup(NAMES.es.types, t)) || cap(String(t));
 const moveText = slug => (isEs() && lookup(NAMES.es.moves, slug)) || lookup(NAMES.en.moves, slug) || rawPretty(slug);
 const moveTextEn = slug => lookup(NAMES.en.moves, slug) || rawPretty(slug); // Showdown needs English names
 const abilityText = slug => (isEs() && lookup(NAMES.es.abilities, slug)) || lookup(NAMES.en.abilities, slug) || rawPretty(slug);
-const eggGroupText = slug => (isEs() && lookup(NAMES.es.eggGroups, slug)) || rawPretty(slug);
+const eggGroupText = slug => (isEs() && lookup(NAMES.es.eggGroups, slug)) || rawPretty(slug).replace(/(\D)(\d)$/, '$1 $2'); // water1 → Water 1
 const statText = slug => (isEs() && lookup(STAT_NAMES_ES, slug)) || lookup(STAT_NAMES, slug) || rawPretty(slug);
 const methodText = slug => (isEs() && lookup(METHODS_ES, slug)) || rawPretty(slug);
 const conditionText = slug => (isEs() && lookup(CONDITIONS_ES, slug)) || rawPretty(slug);
@@ -180,20 +180,163 @@ const imgFallback = id => `data-fallback="${artwork(id)}"`;
 
 const pokeCard = id => `
   <a class="poke" href="#/pokemon/${id}" data-id="${id}">
-    <img loading="lazy" src="${sprite(id)}" alt="${nameOf(id)}" ${imgFallback(id)}>
+    <span class="sprite"><img loading="lazy" src="${sprite(id)}" alt="${nameOf(id)}" crossorigin="anonymous" data-trim ${imgFallback(id)}></span>
     <div class="num">${pad(id)}</div>
     <div class="nom">${nameOf(id)}</div>
   </a>`;
 
 const miniList = ids => `<div class="mini">${ids.map(id => `
   <a href="#/pokemon/${id}" title="${nameOf(id)}">
-    <img loading="lazy" src="${sprite(id)}" alt="${nameOf(id)}" ${imgFallback(id)}>
+    <span class="sprite sprite-mini"><img loading="lazy" src="${sprite(id)}" alt="${nameOf(id)}" crossorigin="anonymous" data-trim ${imgFallback(id)}></span>
     <div>${nameOf(id)}</div>
   </a>`).join('')}</div>`;
 
 const typeBadge = t => `<span class="tipo" style="background:${has(TYPE_COLORS, t) ? TYPE_COLORS[t] : '#888'}">${esc(typeText(t))}</span>`;
 const list = items => `<ul class="lista">${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+const typeColor = t => (has(TYPE_COLORS, t) ? TYPE_COLORS[t] : '#888');
 const loading = (msg = tr('Loading…')) => `<div class="cargando">${msg}</div>`;
+
+// Grey placeholder shapes shown while a page loads (instead of a spinner), so the page feels faster.
+const skeleton = () => `
+  <div class="esqueleto" aria-busy="true">
+    <span class="visually-hidden">${tr('Loading…')}</span>
+    <div class="esq esq-titulo"></div>
+    <div class="esq esq-linea"></div>
+    <div class="esq esq-linea corta"></div>
+    <div class="esq-rejilla">${'<div class="esq esq-tarjeta"></div>'.repeat(8)}</div>
+  </div>`;
+
+// Small sprites are drawn on a 96×96 canvas at very different sizes (Bulbasaur is tiny, Venusaur fills it).
+// When one loads, find where the Pokémon actually is and zoom it to fill its box. Needs crossorigin="anonymous"
+// on the image (the sprite server allows it) so the browser lets us read its pixels.
+const trimCanvas = document.createElement('canvas');
+function trimSprite(img) {
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (!w || w > 200 || img.dataset.trimmed) return; // big pictures (the artwork fallback) already fill their box
+  img.dataset.trimmed = '1';
+  trimCanvas.width = w;
+  trimCanvas.height = h;
+  const ctx = trimCanvas.getContext('2d', { willReadFrequently: true });
+  let data;
+  try {
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0);
+    data = ctx.getImageData(0, 0, w, h).data;
+  } catch { return; } // picture not readable: leave it as it is
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] > 20) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return;
+  const bw = maxX - minX + 1, bh = maxY - minY + 1;
+  const scale = Math.min((w * 0.9) / bw, (h * 0.9) / bh, 2.6);
+  const tx = ((w / 2 - (minX + bw / 2)) / w) * 100, ty = ((h / 2 - (minY + bh / 2)) / h) * 100;
+  img.style.transform = `scale(${scale.toFixed(3)}) translate(${tx.toFixed(2)}%, ${ty.toFixed(2)}%)`;
+}
+document.addEventListener('load', e => {
+  if (e.target instanceof HTMLImageElement && e.target.dataset.trim !== undefined) trimSprite(e.target);
+}, true);
+
+// Every Pokémon's types, from the 18 /type lists (cached for a week); used to colour Pokédex cards.
+let typeMapPromise = null;
+function loadTypeMap() {
+  if (!typeMapPromise) {
+    const types = Object.keys(TYPE_COLORS);
+    typeMapPromise = mapLimit(types, 6, t => api(`/type/${t}`)).then(lists => {
+      const map = new Map();
+      lists.forEach((d, i) => {
+        if (!d || !Array.isArray(d.pokemon)) return;
+        d.pokemon.forEach(x => {
+          const id = idFromUrl(x.pokemon.url);
+          if (!(id >= 1 && id <= TOTAL)) return;
+          const slots = map.get(id) || [];
+          slots[Math.min(1, Math.max(0, (Number(x.slot) || 1) - 1))] = types[i];
+          map.set(id, slots);
+        });
+      });
+      return map;
+    });
+  }
+  return typeMapPromise;
+}
+
+// Give Pokédex-style cards their type colour and type badges once the types are known.
+function colorCards(root = document) {
+  const cards = [...root.querySelectorAll('.poke[data-id]:not([data-typed])')];
+  if (!cards.length) return;
+  loadTypeMap().then(map => cards.forEach(card => {
+    const types = (map.get(Number(card.dataset.id)) || []).filter(Boolean);
+    if (!types.length || card.dataset.typed || !card.isConnected) return;
+    card.dataset.typed = '1';
+    card.style.setProperty('--tipo', typeColor(types[0]));
+    card.style.setProperty('--tipo2', typeColor(types[1] || types[0]));
+    card.classList.add('con-tipo');
+    card.insertAdjacentHTML('beforeend', `<div class="tipos-mini">${types.map(typeBadge).join('')}</div>`);
+  })).catch(() => { /* no colours: the cards still work */ });
+}
+
+// ---------- Site search (home page) ----------
+// Suggestions for Pokémon, games and regions as you type, plus searches of the cards and the Pokédex.
+function siteSearch(query) {
+  const q = String(query).trim();
+  const term = q.toLowerCase();
+  if (!term) return [];
+  const num = term.replace(/^#0*/, '');
+  const out = [];
+  const pokemon = [...(speciesNames || new Map())]
+    .filter(([id, n]) => n.toLowerCase().includes(term) || String(id) === num)
+    .sort((a, b) => (a[1].toLowerCase().startsWith(term) ? 0 : 1) - (b[1].toLowerCase().startsWith(term) ? 0 : 1) || a[0] - b[0])
+    .slice(0, 6);
+  pokemon.forEach(([id]) => out.push({ href: `#/pokemon/${id}`, kind: 'Pokémon',
+    html: `<span class="mini-sprite"><img src="${sprite(id)}" alt="" crossorigin="anonymous" data-trim ${imgFallback(id)}></span> ${pad(id)} ${nameOf(id)}` }));
+  GAMES.filter(g => g.name.toLowerCase().includes(term)).slice(0, 3)
+    .forEach(g => out.push({ href: `#/game/${g.id}`, kind: tr('Game'), html: `${icon('games')} Pokémon ${g.name}` }));
+  REGIONS.filter(r => r.name.toLowerCase().includes(term)).slice(0, 2)
+    .forEach(r => out.push({ href: `#/region/${r.id}`, kind: tr('Region'), html: `${icon('map')} ${r.name}` }));
+  out.push({ href: `#/cards?q=${encodeURIComponent(q.slice(0, 50))}`, kind: tr('Cards'), html: `${icon('cards')} ${tr('Search cards for “{q}”', { q: esc(q) })}` });
+  out.push({ href: `#/pokedex?q=${encodeURIComponent(q)}`, kind: 'Pokédex', html: `${icon('pokedex')} ${tr('Search the Pokédex for “{q}”', { q: esc(q) })}` });
+  return out;
+}
+
+function setupSiteSearch() {
+  const input = document.getElementById('homeQ');
+  const box = document.getElementById('homeResults');
+  if (!input || !box) return;
+  const close = () => { box.hidden = true; input.setAttribute('aria-expanded', 'false'); };
+  input.oninput = () => {
+    const items = siteSearch(input.value);
+    if (!items.length) { close(); return; }
+    box.innerHTML = items.map(it => `<a class="resultado" href="${esc(it.href)}"><span class="resultado-nom">${it.html}</span><small>${esc(it.kind)}</small></a>`).join('');
+    box.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+  };
+  input.onkeydown = e => {
+    const links = [...box.querySelectorAll('a')];
+    if (e.key === 'ArrowDown' && links.length && !box.hidden) { e.preventDefault(); links[0].focus(); }
+    else if (e.key === 'Enter' && links.length && !box.hidden) { e.preventDefault(); location.hash = links[0].getAttribute('href'); }
+    else if (e.key === 'Escape') close();
+  };
+  box.onkeydown = e => {
+    const links = [...box.querySelectorAll('a')];
+    const i = links.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); (links[i + 1] || links[0]).focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (i <= 0) input.focus(); else links[i - 1].focus(); }
+    else if (e.key === 'Escape') { close(); input.focus(); }
+  };
+}
+// Clicking anywhere outside the search closes its suggestions.
+document.addEventListener('click', e => {
+  const box = document.getElementById('homeResults');
+  if (box && !(e.target.closest && e.target.closest('.buscador'))) { box.hidden = true; }
+});
+
 
 // PokeAPI location slugs look like "kanto-route-1" or "mt-moon-b1f"; area slugs add "-area".
 const REGION_PREFIX = /^(kanto|johto|hoenn|sinnoh|unova|kalos|alola|galar|hisui|paldea)-/;
@@ -234,49 +377,69 @@ const gamesByGen = (only, href, extra) => [...new Set(GAMES.map(g => g.gen))].ma
 // ---------- Views ----------
 // Each view returns an HTML string or { html, mount } (mount runs after render).
 
-function home() {
-  const featured = [25, 6, 150, 384, 448, 658][Math.floor(Math.random() * 6)];
-  const section = (href, ico, title, text) =>
-    `<a class="tarjeta seccion" href="${href}"><div class="ico">${ico}</div><h3>${title}</h3><p>${text}</p></a>`;
+// Pokémon of the day: the same for everyone on a given day (UTC), a different one each day.
+const pokemonOfTheDay = () => ((Math.floor(Date.now() / 864e5) * 7919) % TOTAL) + 1;
+
+async function home() {
+  await loadSpecies().catch(() => {});
+  const daily = pokemonOfTheDay();
+  const tile = (href, ico, title, text) =>
+    `<a class="tarjeta seccion" href="${href}"><span class="ico">${icon(ico)}</span><h3>${title}</h3><p>${text}</p></a>`;
   return {
     html: `
       <section class="hero">
-        <div>
+        <div class="hero-texto">
           <h1>${tr('Welcome to PokéInfo')}</h1>
-          <p>${tr('Your guide to the Pokémon world: details on every Pokémon, every region and every main-series game, plus what makes each version different.')}</p>
-          <a class="btn sec" href="#/pokedex">${tr('Explore the Pokédex')}</a>
-          <button class="btn sec" id="randomBtn">🎲 ${tr('Random Pokémon')}</button>
-          <button class="btn sec" id="installBtn" hidden>📲 ${tr('Install app')}</button>
+          <p>${tr('Your guide to the Pokémon world: every Pokémon, game, guide and trading card, plus tools for your team, your Nuzlocke runs and your card collection.')}</p>
+          <div class="buscador" role="search">
+            ${icon('search', 'buscador-icono')}
+            <input id="homeQ" type="search" autocomplete="off" placeholder="${tr('Search Pokémon, games, regions, cards…')}" aria-label="${tr('Search the site')}" aria-controls="homeResults" aria-expanded="false">
+            <div class="resultados tarjeta" id="homeResults" hidden></div>
+          </div>
+          <div class="hero-acciones">
+            <button class="btn sec" id="randomBtn">${icon('random')} ${tr('Random Pokémon')}</button>
+            <button class="btn sec" id="installBtn" hidden>${icon('install')} ${tr('Install app')}</button>
+          </div>
         </div>
-        <img src="${artwork(featured)}" alt="${tr('Featured Pokémon')}">
+        <a class="del-dia" id="dayPoke" href="#/pokemon/${daily}">
+          <span class="del-dia-titulo">${icon('calendar')} ${tr('Pokémon of the day')}</span>
+          <img src="${artwork(daily)}" alt="" width="200" height="200">
+          <b>${pad(daily)} ${nameOf(daily)}</b>
+          <span class="tipos-fila" id="dayTypes"></span>
+        </a>
       </section>
-
-      <div class="cifras tarjeta">
-        <div class="cifra"><b>${TOTAL}</b><span>Pokémon</span></div>
-        <div class="cifra"><b>${GENERATIONS.length}</b><span>${tr('Generations')}</span></div>
-        <div class="cifra"><b>${REGIONS.length}</b><span>${tr('Regions')}</span></div>
-        <div class="cifra"><b>${GAMES.length}</b><span>${tr('Main games')}</span></div>
-      </div>
 
       <section id="homeNews" class="noticias-portada" aria-live="polite"></section>
 
+      <h2>${tr('Explore')}</h2>
       <div class="secciones">
-        ${section('#/pokedex', '📕', 'Pokédex', tr('Stats, types, abilities, moves and evolutions for all {n} Pokémon.', { n: TOTAL }))}
-        ${section('#/regions', '🗺️', tr('Regions'), tr('From Kanto to Paldea: inspiration, professors, starters and legendaries.'))}
-        ${section('#/games', '🎮', tr('Games'), tr('Every main-series game, its new features and version exclusives.'))}
-        ${section('#/guides', '📖', tr('Guides'), tr('Walkthroughs, routes, wild Pokémon locations and key items for each game.'))}
-        ${section('#/team', '🛡️', tr('Team builder'), tr('Build a team of six with their moves, and spot its weaknesses and coverage gaps.'))}
-        ${section('#/nuzlocke', '💀', tr('Nuzlocke'), tr('Track a Nuzlocke run: one encounter per area, and fainted means gone.'))}
-        ${section('#/news', '📰', tr('News'), tr('Pokémon headlines from around the web, updated every 6 hours.'))}
-        ${section('#/cards', '🃏', tr('Cards'), tr('Every card of the trading card game since 1999: sets, attacks, rarities and prices.'))}
-        ${section('#/compare', '⚖️', tr('Compare'), tr('Put two games side by side and see how they differ.'))}
+        ${tile('#/pokedex', 'pokedex', 'Pokédex', tr('Stats, types, abilities, moves and evolutions for all {n} Pokémon.', { n: TOTAL }))}
+        ${tile('#/cards', 'cards', tr('Cards'), tr('Every card of the trading card game since 1999: sets, attacks, rarities and prices.'))}
+        ${tile('#/guides', 'guide', tr('Guides'), tr('Walkthroughs, routes, wild Pokémon locations and key items for each game.'))}
+        ${tile('#/games', 'games', tr('Games'), tr('Every main-series game, its new features and version exclusives.'))}
+        ${tile('#/regions', 'map', tr('Regions'), tr('From Kanto to Paldea: inspiration, professors, starters and legendaries.'))}
+        ${tile('#/compare', 'compare', tr('Compare'), tr('Put two games side by side and see how they differ.'))}
+      </div>
+
+      <h2>${tr('Your tools')}</h2>
+      <div class="secciones">
+        ${tile('#/team', 'team', tr('Team builder'), tr('Build a team of six with their moves, and spot its weaknesses and coverage gaps.'))}
+        ${tile('#/nuzlocke', 'nuzlocke', tr('Nuzlocke'), tr('Track a Nuzlocke run: one encounter per area, and fainted means gone.'))}
+        ${tile('#/collection', 'collection', tr('My collection'), tr('Tick the trading cards you own and see your progress in every set.'))}
       </div>`,
     mount() {
       document.getElementById('randomBtn').onclick = () => {
         location.hash = `#/pokemon/${1 + Math.floor(Math.random() * TOTAL)}`;
       };
+      setupSiteSearch();
       renderHomeNews();
       showInstallButton();
+      api(`/pokemon/${daily}`).then(p => {
+        const types = document.getElementById('dayTypes');
+        if (types) types.innerHTML = p.types.map(t => typeBadge(t.type.name)).join('');
+        const card = document.getElementById('dayPoke');
+        if (card && p.types[0]) card.style.setProperty('--tipo', typeColor(p.types[0].type.name));
+      }).catch(() => { /* the card still links to the Pokémon */ });
     },
   };
 }
@@ -343,6 +506,7 @@ async function pokedex(genParam) {
         applyFilters();
       };
       applyFilters();
+      colorCards(document.getElementById('grid'));
     },
   };
 }
@@ -401,9 +565,14 @@ const inLang = arr => {
   return mine.length ? mine : all.filter(x => x.language.name === 'en');
 };
 
-async function pokemonDetail(param) {
+// A Pokémon's page: a header in its type colours, then tabs. The tab is part of the link (#/pokemon/6/moves),
+// and Moves, Where to find and Cards only load when their tab is first opened.
+const POKE_TABS = { overview: 'Overview', moves: 'Moves', where: 'Where to find', cards: 'Cards' };
+
+async function pokemonDetail(param, tabParam) {
   const id = parseInt(param, 10);
   if (!id || id < 1 || id > TOTAL) return notFound();
+  const tab = has(POKE_TABS, tabParam) ? tabParam : 'overview';
 
   const [p, s] = await Promise.all([api(`/pokemon/${id}`), api(`/pokemon-species/${id}`), loadSpecies()]);
   const chain = s.evolution_chain ? await api(s.evolution_chain.url).catch(() => null) : null;
@@ -414,11 +583,12 @@ async function pokemonDetail(param) {
   const flavor = flavors.length ? esc(flavors[flavors.length - 1].flavor_text.replace(/[\f\n\r]+/g, ' ')) : '';
   const gen = genOf(id);
   const region = regionById(gen.region);
+  const types = p.types.map(t => t.type.name);
   const totalStats = p.stats.reduce((sum, st) => sum + (Number(st.base_stat) || 0), 0);
-  const mult = defenses(p.types.map(t => t.type.name));
+  const mult = defenses(types);
   const matchups = [[4, 'Takes ×4 from'], [2, 'Takes ×2 from'], [0.5, 'Takes ×½ from'], [0.25, 'Takes ×¼ from'], [0, 'Immune to']]
     .map(([m, label]) => [tr(label), Object.keys(mult).filter(t => mult[t] === m)])
-    .filter(([, types]) => types.length);
+    .filter(([, list]) => list.length);
   const cryUrl = p.cries && (p.cries.latest || p.cries.legacy);
   const cry = typeof cryUrl === 'string' && cryUrl.startsWith('https://raw.githubusercontent.com/PokeAPI/') ? cryUrl : null;
   const stages = chain ? evolutionStages(chain.chain).map(st => st.filter(x => x <= TOTAL)) : [];
@@ -427,90 +597,91 @@ async function pokemonDetail(param) {
     .map(v => `<a class="chip" href="#/game/${g.id}">Pokémon ${v.name}</a>`));
 
   const tags = [];
-  if (s.is_legendary) tags.push(`<span class="chip">⭐ ${tr('Legendary')}</span>`);
-  if (s.is_mythical) tags.push(`<span class="chip">✨ ${tr('Mythical')}</span>`);
-  if (s.is_baby) tags.push(`<span class="chip">🍼 ${tr('Baby')}</span>`);
+  if (s.is_legendary) tags.push(`<span class="chip chip-tag">${icon('star')} ${tr('Legendary')}</span>`);
+  if (s.is_mythical) tags.push(`<span class="chip chip-tag">${icon('shiny')} ${tr('Mythical')}</span>`);
+  if (s.is_baby) tags.push(`<span class="chip chip-tag">${icon('egg')} ${tr('Baby')}</span>`);
+
+  const statBars = p.stats.map(st => {
+    const v = Number(st.base_stat) || 0;
+    const color = v < 60 ? '#f34444' : v < 90 ? '#ffb000' : v < 120 ? '#3fa129' : '#2980ef';
+    return `<div class="stat"><span>${esc(statText(st.stat.name))}</span><b>${v}</b>
+      <div class="barra"><div style="width:${Math.min(100, v / 2.55)}%;background:${color}"></div></div></div>`;
+  }).join('');
 
   return {
     html: `
       <a class="volver" href="#/pokedex">← ${tr('Back to Pokédex')}</a>
-      <div class="detalle">
-        <div class="tarjeta ficha">
-          <div class="num">${pad(id)}</div>
+      <section class="cabecera-poke" style="--tipo:${typeColor(types[0])};--tipo2:${typeColor(types[1] || types[0])}">
+        <div class="cabecera-arte"><img class="arte" id="art" src="${artwork(id)}" alt="${name}" width="300" height="300"></div>
+        <div class="cabecera-info">
+          <div class="num">${pad(id)} · ${tr('Gen {n}', { n: gen.n })} · <a href="#/region/${region.id}">${region.name}</a></div>
           <h1>${name}</h1>
           <p class="genero">${genus}</p>
-          <img class="arte" id="art" src="${artwork(id)}" alt="${name}">
-          <div class="tipos">${p.types.map(t => typeBadge(t.type.name)).join('')}</div>
-          ${tags.length ? `<div class="lista-chips" style="justify-content:center">${tags.join('')}</div>` : ''}
+          <div class="tipos">${types.map(typeBadge).join('')}${tags.join('')}</div>
+          ${flavor ? `<p class="descripcion">${flavor}</p>` : ''}
           <div class="acciones">
-            <button class="btn sec" id="shinyBtn">✨ ${tr('View shiny')}</button>
-            ${cry ? `<button class="btn sec" id="cryBtn">🔊 ${tr('Cry')}</button>` : ''}
-            <button class="btn sec" id="teamBtn">➕ ${tr('Add to team')}</button>
+            <button class="btn sec" id="shinyBtn">${icon('shiny')} ${tr('View shiny')}</button>
+            ${cry ? `<button class="btn sec" id="cryBtn">${icon('sound')} ${tr('Cry')}</button>` : ''}
+            <button class="btn sec" id="teamBtn">${icon('plus')} ${tr('Add to team')}</button>
           </div>
         </div>
+      </section>
 
-        <div>
+      <div class="pestanas pestanas-poke" role="tablist" aria-label="${tr('Sections')}">
+        ${Object.entries(POKE_TABS).map(([k, label]) => `
+          <button type="button" role="tab" id="tab-${k}" aria-controls="panel-${k}" data-tab="${k}"
+            aria-selected="${k === tab}" tabindex="${k === tab ? 0 : -1}" class="${k === tab ? 'activa' : ''}">${tr(label)}</button>`).join('')}
+      </div>
+
+      <section class="panel-poke" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" ${tab === 'overview' ? '' : 'hidden'}>
+        <div class="resumen-poke">
           <div class="tarjeta">
-            <p style="margin-top:0">${flavor}</p>
+            <h2>${tr('About')}</h2>
             <div class="datos">
               <div class="dato"><small>${tr('Height')}</small><b>${(p.height / 10).toFixed(1)} m</b></div>
               <div class="dato"><small>${tr('Weight')}</small><b>${(p.weight / 10).toFixed(1)} kg</b></div>
-              <div class="dato"><small>${tr('Generation')}</small><b>${tr('Gen {n}', { n: gen.n })}</b></div>
-              <div class="dato"><small>${tr('Region')}</small><b><a href="#/region/${region.id}">${region.name}</a></b></div>
               <div class="dato"><small>${tr('Catch rate')}</small><b>${Number(s.capture_rate) || '—'}</b></div>
               <div class="dato"><small>${tr('Egg groups')}</small><b>${s.egg_groups.map(e => esc(eggGroupText(e.name))).join(', ') || '—'}</b></div>
             </div>
-            <h2>${tr('Abilities')}</h2>
+            <h3>${tr('Abilities')}</h3>
             <div class="lista-chips">
               ${p.abilities.map(a => `<span class="chip">${esc(abilityText(a.ability.name))}${a.is_hidden ? ` (${tr('hidden')})` : ''}</span>`).join('')}
             </div>
           </div>
-
-          <div class="tarjeta" style="margin-top:16px">
-            <h2 style="margin-top:0">${tr('Base stats')} <small style="color:var(--suave)">(${tr('total {n}', { n: totalStats })})</small></h2>
-            ${p.stats.map(st => {
-              const v = Number(st.base_stat) || 0;
-              const color = v < 60 ? '#f34444' : v < 90 ? '#ffb000' : v < 120 ? '#3fa129' : '#2980ef';
-              return `<div class="stat"><span>${esc(statText(st.stat.name))}</span><b>${v}</b>
-                <div class="barra"><div style="width:${Math.min(100, v / 2.55)}%;background:${color}"></div></div></div>`;
-            }).join('')}
+          <div class="tarjeta">
+            <h2>${tr('Base stats')} <small>(${tr('total {n}', { n: totalStats })})</small></h2>
+            ${statBars}
           </div>
-
-          <div class="tarjeta" style="margin-top:16px">
-            <h2 style="margin-top:0">${tr('Type effectiveness')}</h2>
-            ${matchups.map(([label, types]) => `
-              <div class="eficacia"><span>${label}</span><div class="tipos-fila">${types.map(typeBadge).join('')}</div></div>`).join('')}
+          <div class="tarjeta">
+            <h2>${tr('Type effectiveness')}</h2>
+            ${matchups.map(([label, list]) => `
+              <div class="eficacia"><span>${label}</span><div class="tipos-fila">${list.map(typeBadge).join('')}</div></div>`).join('')}
             <p class="nota">${tr('Based on type only; abilities like Levitate or Flash Fire can change this.')}</p>
           </div>
+          ${stages.length > 1 || exclusiveIn.length ? `
+          <div class="tarjeta">
+            ${stages.length > 1 ? `
+              <h2>${tr('Evolution chain')}</h2>
+              <div class="evoluciones">
+                ${stages.map(st => `<div class="evoluciones">${st.map(pokeCard).join('')}</div>`).join(`<span class="flecha">${icon('arrowRight')}</span>`)}
+              </div>` : ''}
+            ${exclusiveIn.length ? `<h2>${tr('Version exclusive in')}</h2><div class="lista-chips">${exclusiveIn.join('')}</div>` : ''}
+          </div>` : ''}
         </div>
-      </div>
-
-      ${stages.length > 1 ? `
-        <h2>${tr('Evolution chain')}</h2>
-        <div class="evoluciones">
-          ${stages.map(st => `<div class="evoluciones">${st.map(pokeCard).join('')}</div>`).join('<span class="flecha">→</span>')}
-        </div>` : ''}
-
-      ${exclusiveIn.length ? `<h2>${tr('Version exclusive in')}</h2><div class="lista-chips">${exclusiveIn.join('')}</div>` : ''}
-
-      <h2>${tr('Where to find')}</h2>
-      <div id="donde">${loading(tr('Loading locations…'))}</div>
-
-      <h2>${tr('Moves')}</h2>
-      <details class="tarjeta desplegable" id="movesBox">
-        <summary>${tr('Show the moves {name} can learn', { name })} <small>${tr('by game: level-up, TM/HM, egg and tutor')}</small></summary>
-        <div class="cuerpo-lugar" id="moves"></div>
-      </details>
-
-      <h2>${tr('Trading cards')}</h2>
-      <details class="tarjeta desplegable" id="cardsBox">
-        <summary>${tr('Show the cards of {name}', { name })} <small>${tr('every set since 1999')}</small></summary>
-        <div class="cuerpo-lugar" id="pokeCards"></div>
-      </details>
+      </section>
+      <section class="panel-poke" id="panel-moves" role="tabpanel" aria-labelledby="tab-moves" ${tab === 'moves' ? '' : 'hidden'}>
+        <div id="moves"></div>
+      </section>
+      <section class="panel-poke" id="panel-where" role="tabpanel" aria-labelledby="tab-where" ${tab === 'where' ? '' : 'hidden'}>
+        <div id="donde"></div>
+      </section>
+      <section class="panel-poke" id="panel-cards" role="tabpanel" aria-labelledby="tab-cards" ${tab === 'cards' ? '' : 'hidden'}>
+        <div id="pokeCards"></div>
+      </section>
 
       <div class="navpoke">
-        ${id > 1 ? `<a class="btn sec" href="#/pokemon/${id - 1}">← ${pad(id - 1)} ${nameOf(id - 1)}</a>` : '<span></span>'}
-        ${id < TOTAL ? `<a class="btn sec" href="#/pokemon/${id + 1}">${nameOf(id + 1)} ${pad(id + 1)} →</a>` : ''}
+        ${id > 1 ? `<a class="btn sec" href="#/pokemon/${id - 1}">${icon('arrowLeft')} ${pad(id - 1)} ${nameOf(id - 1)}</a>` : '<span></span>'}
+        ${id < TOTAL ? `<a class="btn sec" href="#/pokemon/${id + 1}">${nameOf(id + 1)} ${pad(id + 1)} ${icon('arrowRight')}</a>` : ''}
       </div>`,
     mount() {
       let shiny = false;
@@ -519,13 +690,13 @@ async function pokemonDetail(param) {
       btn.onclick = () => {
         shiny = !shiny;
         art.src = artwork(id, shiny);
-        btn.textContent = shiny ? `🎨 ${tr('View normal')}` : `✨ ${tr('View shiny')}`;
+        btn.innerHTML = shiny ? `${icon('palette')} ${tr('View normal')}` : `${icon('shiny')} ${tr('View shiny')}`;
       };
       const cryBtn = document.getElementById('cryBtn');
       if (cryBtn) cryBtn.onclick = () => {
         const a = new Audio(cry);
         a.volume = 0.4;
-        a.play().catch(() => { cryBtn.textContent = `🔇 ${tr('Cry unavailable')}`; cryBtn.disabled = true; });
+        a.play().catch(() => { cryBtn.innerHTML = `${icon('mute')} ${tr('Cry unavailable')}`; cryBtn.disabled = true; });
       };
       document.getElementById('teamBtn').onclick = () => {
         const members = loadSavedTeam();
@@ -533,15 +704,39 @@ async function pokemonDetail(param) {
         if (members.length >= TEAM_SIZE) { alert(tr('Your team is full. Remove a Pokémon first.')); return; }
         location.hash = teamHash([...members, { id, moves: [] }], loadSavedGame());
       };
-      loadWhereToFind(id);
-      const movesBox = document.getElementById('movesBox');
-      movesBox.addEventListener('toggle', () => {
-        if (movesBox.open && !movesBox.dataset.loaded) { movesBox.dataset.loaded = '1'; renderMoves(p); }
+      colorCards(document.getElementById('panel-overview'));
+
+      // Tabs: click, or arrow keys / Home / End when a tab has focus. Switching keeps the page and updates the link.
+      const loaders = {
+        moves: () => renderMoves(p),
+        where: () => { document.getElementById('donde').innerHTML = loading(tr('Loading locations…')); loadWhereToFind(id); },
+        cards: panel => renderPokemonCards(id, panel),
+      };
+      const tabs = [...document.querySelectorAll('.pestanas-poke [role="tab"]')];
+      const show = (k, focus) => {
+        tabs.forEach(b => {
+          const on = b.dataset.tab === k;
+          b.classList.toggle('activa', on);
+          b.setAttribute('aria-selected', String(on));
+          b.tabIndex = on ? 0 : -1;
+          if (on && focus) b.focus();
+        });
+        Object.keys(POKE_TABS).forEach(t => { document.getElementById(`panel-${t}`).hidden = t !== k; });
+        const panel = document.getElementById(`panel-${k}`);
+        if (has(loaders, k) && !panel.dataset.loaded) { panel.dataset.loaded = '1'; loaders[k](panel); }
+        const hash = k === 'overview' ? `#/pokemon/${id}` : `#/pokemon/${id}/${k}`;
+        if (location.hash !== hash) history.replaceState(null, '', hash);
+      };
+      tabs.forEach((b, i) => {
+        b.onclick = () => show(b.dataset.tab);
+        b.onkeydown = e => {
+          const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+          if (to === undefined) return;
+          e.preventDefault();
+          show(tabs[(to + tabs.length) % tabs.length].dataset.tab, true);
+        };
       });
-      const cardsBox = document.getElementById('cardsBox');
-      cardsBox.addEventListener('toggle', () => {
-        if (cardsBox.open && !cardsBox.dataset.loaded) { cardsBox.dataset.loaded = '1'; renderPokemonCards(id, cardsBox); }
-      });
+      show(tab);
     },
   };
 }
@@ -787,8 +982,8 @@ async function gameDetail(id) {
         <h1>Pokémon ${g.name}</h1>
         <p class="subtitulo" style="margin:0">${g.year} · ${g.platform} · ${tr('Generation {n}', { n: g.gen })} · <a href="#/region/${region.id}">${region.name}</a> · <span class="etiqueta">${tr(g.type)}</span></p>
         ${guideFor(g.id) ? `
-          <a class="btn" href="#/guide/${g.id}" style="margin-top:10px">📖 ${tr('Open game guide')}</a>
-          <a class="btn sec" href="#/nuzlocke/${g.id}" style="margin-top:10px">💀 ${tr('Nuzlocke tracker')}</a>` : ''}
+          <a class="btn" href="#/guide/${g.id}" style="margin-top:10px">${icon('guide')} ${tr('Open game guide')}</a>
+          <a class="btn sec" href="#/nuzlocke/${g.id}" style="margin-top:10px">${icon('nuzlocke')} ${tr('Nuzlocke tracker')}</a>` : ''}
       </div>
     </div>
 
@@ -885,7 +1080,7 @@ async function guideView(id, tab = 'walkthrough') {
     <a class="volver" href="#/game/${g.id}">← Pokémon ${g.name}</a>
     <h1>${tr('Pokémon {game} guide', { game: g.name })}</h1>
     <p class="subtitulo">${g.year} · ${g.platform} · ${guide.regions.map(r => regionById(r) ? `<a href="#/region/${r}">${regionById(r).name}</a>` : esc(cap(r))).join(' & ')}
-      · <a href="#/nuzlocke/${g.id}">💀 ${tr('Nuzlocke tracker')}</a></p>
+      · <a href="#/nuzlocke/${g.id}">${icon('nuzlocke')} ${tr('Nuzlocke tracker')}</a></p>
     <div class="pestanas">
       ${Object.entries(GUIDE_TABS).map(([k, label]) => `<a href="#/guide/${g.id}/${k}" class="${k === tab ? 'activa' : ''}">${tr(label)}</a>`).join('')}
     </div>`;
@@ -905,8 +1100,8 @@ function guideWalkthrough(guide) {
           <div class="paso">${i + 1}</div>
           <div>
             <b>${m.who}</b> ${m.type ? typeBadge(m.type) : ''}
-            ${m.where ? `<div class="donde">📍 ${m.where}</div>` : ''}
-            ${m.reward ? `<div class="donde">🏅 ${m.reward}</div>` : ''}
+            ${m.where ? `<div class="donde">${icon('pin')} ${m.where}</div>` : ''}
+            ${m.reward ? `<div class="donde">${icon('medal')} ${m.reward}</div>` : ''}
           </div>
         </div>`).join('')}
     </div>`).join('');
@@ -1182,7 +1377,7 @@ async function team(param, gameParam) {
     return `
       <div class="tarjeta slot">
         <button class="quitar" data-id="${m.id}" aria-label="${tr('Remove {name}', { name: nameOf(m.id) })}">✕</button>
-        <a href="#/pokemon/${m.id}"><img src="${sprite(m.id)}" alt="${nameOf(m.id)}" ${imgFallback(m.id)}></a>
+        <a href="#/pokemon/${m.id}" class="sprite"><img src="${sprite(m.id)}" alt="${nameOf(m.id)}" crossorigin="anonymous" data-trim ${imgFallback(m.id)}></a>
         <b>${nameOf(m.id)}</b>
         <div class="tipos-fila">${m.types.map(typeBadge).join('')}</div>
         ${available && !available.has(m.id) ? `<span class="etiqueta aviso">${tr('Not in {game}', { game: game.name })}</span>` : ''}
@@ -1223,7 +1418,7 @@ async function team(param, gameParam) {
         .slice(0, 8);
       if (picks.length) suggestions = `
         <div class="tarjeta">
-          <h3>💡 ${tr('Pokémon that would help')}</h3>
+          <h3>${icon('idea')} ${tr('Pokémon that would help')}</h3>
           <p class="nota" style="margin:0 0 8px">${tr('Each has a type that resists one or more of your biggest threats. Click to add it.')}</p>
           <div class="sugerencias">
             ${picks.map(x => `
@@ -1240,13 +1435,13 @@ async function team(param, gameParam) {
     analysis = `
       <div class="resumen">
         <div class="tarjeta">
-          <h3>⚠️ ${tr('Biggest threats')}</h3>
+          <h3>${icon('warning')} ${tr('Biggest threats')}</h3>
           ${threats.length
             ? threats.map(r => `<div class="amenaza">${typeBadge(r.atk)} <span>${tr('{weak} weak · {resist} resist', { weak: r.weak, resist: r.resist })}</span></div>`).join('')
             : `<p class="subtitulo" style="margin:0">${tr('No type hits more than one of your Pokémon without being resisted. Nice balance!')}</p>`}
         </div>
         <div class="tarjeta">
-          <h3>🎯 ${tr('Offensive coverage')} <small>${covered.length}/${allTypes.length}</small></h3>
+          <h3>${icon('target')} ${tr('Offensive coverage')} <small>${covered.length}/${allTypes.length}</small></h3>
           <p class="nota" style="margin:0 0 8px">${coverageNote}</p>
           ${uncovered.length
             ? `<div class="donde">${tr('Not covered:')}</div><div class="tipos-fila">${uncovered.map(typeBadge).join('')}</div>`
@@ -1274,7 +1469,7 @@ async function team(param, gameParam) {
       <h2>${tr('Export')}</h2>
       <p class="subtitulo">${tr('Paste this into Pokémon Showdown (Teambuilder → Import from text). Names are in English, as Showdown expects.')}</p>
       <textarea id="sdText" class="exportar" rows="${Math.min(30, showdown.split('\n').length + 1)}" readonly aria-label="${tr('Team in Pokémon Showdown format')}">${esc(showdown)}</textarea>
-      <button type="button" class="btn sec" id="sdCopy">📋 ${tr('Copy')}</button>`;
+      <button type="button" class="btn sec" id="sdCopy">${icon('copy')} ${tr('Copy')}</button>`;
   }
 
   return {
@@ -1292,7 +1487,7 @@ async function team(param, gameParam) {
         <input id="addQ" list="nombres" aria-label="${tr('Add a Pokémon by name or number')}" placeholder="${team.length >= TEAM_SIZE ? tr('Team is full') : tr('Add a Pokémon: name or number…')}" ${team.length >= TEAM_SIZE ? 'disabled' : ''}>
         <datalist id="nombres">${pool.map(id => `<option value="${nameOf(id)}">`).join('')}</datalist>
         <button class="btn" ${team.length >= TEAM_SIZE ? 'disabled' : ''}>${tr('Add')}</button>
-        <button type="button" class="btn sec" id="randomTeam">🎲 ${tr('Random team')}</button>
+        <button type="button" class="btn sec" id="randomTeam">${icon('random')} ${tr('Random team')}</button>
         ${team.length ? `<button type="button" class="btn sec" id="clearTeam">${tr('Clear')}</button>` : ''}
       </form>
       <div class="equipo">${slots}</div>
@@ -1338,7 +1533,7 @@ async function team(param, gameParam) {
       const copy = document.getElementById('sdCopy');
       if (copy) copy.onclick = () => {
         const text = document.getElementById('sdText');
-        const done = () => { copy.textContent = `✅ ${tr('Copied')}`; };
+        const done = () => { copy.innerHTML = `${icon('check')} ${esc(tr('Copied'))}`; };
         if (navigator.clipboard) navigator.clipboard.writeText(text.value).then(done, () => text.select());
         else text.select();
       };
@@ -1351,7 +1546,7 @@ async function team(param, gameParam) {
 // Classic rules: only the first encounter in each area counts, and a Pokémon that faints is gone for good.
 
 const NZ_KEY = 'pokeinfo-nuzlocke';
-const NZ_STATUS = { caught: { icon: '✅', label: 'Caught' }, fainted: { icon: '💀', label: 'Fainted' }, missed: { icon: '❌', label: 'Missed' } };
+const NZ_STATUS = { caught: { icon: 'check', label: 'Caught' }, fainted: { icon: 'nuzlocke', label: 'Fainted' }, missed: { icon: 'cross', label: 'Missed' } };
 const LOC_SLUG = /^[a-z0-9-]{1,100}$/;
 
 function loadRuns() {
@@ -1378,7 +1573,7 @@ function saveRuns(runs) {
   try { localStorage.setItem(NZ_KEY, JSON.stringify({ version: 1, runs })); } catch { /* run just won't be remembered */ }
 }
 
-const nzStatus = s => `<span class="etiqueta nz-${s}">${NZ_STATUS[s].icon} ${tr(NZ_STATUS[s].label)}</span>`;
+const nzStatus = s => `<span class="etiqueta nz-${s}">${icon(NZ_STATUS[s].icon)} ${tr(NZ_STATUS[s].label)}</span>`;
 const nzWho = e => (e.id ? nameOf(e.id) : tr('Unknown')) + (e.nick ? ` “${esc(e.nick)}”` : '');
 
 async function nuzlocke(gameId) {
@@ -1422,7 +1617,7 @@ async function nuzlocke(gameId) {
       <div id="nzDash">${nzDashboard(run, allLocs.length)}</div>
       <div class="filtros">
         <input id="lugarQ" type="search" placeholder="${tr('Filter locations: Route 3, Mt. Moon…')}" aria-label="${tr('Filter locations')}">
-        <button type="button" class="btn sec" id="nzReset">🗑️ ${tr('Reset this run')}</button>
+        <button type="button" class="btn sec" id="nzReset">${icon('trash')} ${tr('Reset this run')}</button>
       </div>
       <datalist id="nzNames">${[...speciesNames.keys()].map(id => `<option value="${nameOf(id)}">`).join('')}</datalist>
       ${body}`,
@@ -1476,7 +1671,7 @@ async function nuzlocke(gameId) {
               <input name="poke" list="nzNames" placeholder="${tr('Pokémon')}" aria-label="${tr('Pokémon encountered')}" value="${e && e.id ? nameOf(e.id) : ''}">
               <input name="nick" maxlength="12" placeholder="${tr('Nickname')}" aria-label="${tr('Nickname')}" value="${e ? esc(e.nick) : ''}">
               <select name="status" aria-label="${tr('Result')}">
-                ${Object.keys(NZ_STATUS).map(s => `<option value="${s}" ${(e ? e.status : 'caught') === s ? 'selected' : ''}>${NZ_STATUS[s].icon} ${tr(NZ_STATUS[s].label)}</option>`).join('')}
+                ${Object.keys(NZ_STATUS).map(s => `<option value="${s}" ${(e ? e.status : 'caught') === s ? 'selected' : ''}>${tr(NZ_STATUS[s].label)}</option>`).join('')}
               </select>
               <button class="btn">${tr('Save')}</button>
               <button type="button" class="btn sec" data-clear>${tr('Clear')}</button>
@@ -1563,8 +1758,8 @@ function nzDashboard(run, totalAreas) {
       <div class="cifra"><b>${count('fainted')}</b><span>${tr('In the graveyard')}</span></div>
       <div class="cifra"><b>${count('missed')}</b><span>${tr('Missed encounters')}</span></div>
     </div>
-    ${alive.length ? `<h2>✅ ${tr('Alive')}</h2><div class="nz-grupo">${alive.map(x => card(x, `<button type="button" class="btn sec" data-faint="${esc(x[0])}">💀 ${tr('Mark as fainted')}</button>`)).join('')}</div>` : ''}
-    ${dead.length ? `<h2>💀 ${tr('Graveyard')}</h2><div class="nz-grupo nz-cementerio">${dead.map(x => card(x, '')).join('')}</div>` : ''}`;
+    ${alive.length ? `<h2>${icon('check')} ${tr('Alive')}</h2><div class="nz-grupo">${alive.map(x => card(x, `<button type="button" class="btn sec" data-faint="${esc(x[0])}">${icon('nuzlocke')} ${tr('Mark as fainted')}</button>`)).join('')}</div>` : ''}
+    ${dead.length ? `<h2>${icon('nuzlocke')} ${tr('Graveyard')}</h2><div class="nz-grupo nz-cementerio">${dead.map(x => card(x, '')).join('')}</div>` : ''}`;
 }
 
 function notFound() {
@@ -1580,14 +1775,40 @@ const ROUTES = {
   guides, guide: guideView, team, nuzlocke,
   cards: cardsView, card: cardView, news: newsView, collection: collectionView,
 };
-const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides', card: 'cards', collection: 'cards' };
+const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides', card: 'cards' };
 let renderToken = 0;
 let lastRoute = null;
 
 function setMenuOpen(open) {
   document.getElementById('nav').classList.toggle('abierto', open);
   document.getElementById('menuBtn').setAttribute('aria-expanded', String(open));
+  if (!open) closeMenuGroups();
 }
+
+// Menu groups ("Games", "Tools"): a button opens its list; a second click, Escape, a click elsewhere or
+// going to another page closes it.
+function closeMenuGroups(except) {
+  document.querySelectorAll('#nav .grupo').forEach(g => {
+    if (g === except) return;
+    g.classList.remove('abierto');
+    g.querySelector('.grupo-btn').setAttribute('aria-expanded', 'false');
+  });
+}
+document.querySelectorAll('#nav .grupo-btn').forEach(btn => {
+  btn.onclick = () => {
+    const group = btn.parentElement;
+    const open = !group.classList.contains('abierto');
+    closeMenuGroups(group);
+    group.classList.toggle('abierto', open);
+    btn.setAttribute('aria-expanded', String(open));
+  };
+});
+document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('#nav .grupo'))) closeMenuGroups(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const open = document.querySelector('#nav .grupo.abierto');
+  if (open) { closeMenuGroups(); open.querySelector('.grupo-btn').focus(); }
+});
 
 // Name the tab after the page heading, and move keyboard focus to the new page.
 // On a re-render of the same page (adding to a team, changing a select) focus returns to the control that had it.
@@ -1609,12 +1830,13 @@ async function router() {
   const [route = '', ...params] = path.split('/').map(safeDecode);
   const section = has(NAV_SECTION, route) ? NAV_SECTION[route] : route;
   document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('activo', a.dataset.route === section));
+  document.querySelectorAll('#nav .grupo').forEach(g => g.querySelector('.grupo-btn').classList.toggle('activo', Boolean(g.querySelector('a.activo'))));
   setMenuOpen(false);
 
   const keepId = app.contains(document.activeElement) ? document.activeElement.id : '';
   const token = ++renderToken;
   const view = has(ROUTES, route) ? ROUTES[route] : notFound;
-  app.innerHTML = loading();
+  app.innerHTML = skeleton();
   if (keepId === '' || lastRoute !== route) window.scrollTo(0, 0); // stay in place when a page redraws itself
 
   try {
@@ -1645,7 +1867,7 @@ const currentTheme = () => document.documentElement.dataset.theme || (darkQuery.
 
 function updateThemeBtn() {
   const dark = currentTheme() === 'dark';
-  themeBtn.textContent = dark ? '☀️' : '🌙';
+  themeBtn.innerHTML = icon(dark ? 'sun' : 'moon');
   themeBtn.title = dark ? tr('Switch to light theme') : tr('Switch to dark theme');
   themeBtn.setAttribute('aria-label', themeBtn.title);
 }
