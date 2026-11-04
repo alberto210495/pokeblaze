@@ -127,14 +127,16 @@ async function tcgSets() {
   return new Map(en.filter(s => SET_ID.test(s.id)).map((s, order) => [s.id, { ...s, name: esName.get(s.id) || s.name, order }]));
 }
 
-const cardTile = (c, setName) => {
-  return `
-    <a class="carta" href="#/card/${esc(c.id)}" data-id="${esc(c.id)}" data-name="${cardText(String(c.name).toLowerCase())}">
+// A card in a grid, with its "I have this card" button (js/collection.js).
+const cardTile = (c, setName) => `
+  <div class="carta-item" data-id="${esc(c.id)}" data-name="${cardText(String(c.name).toLowerCase())}">
+    <a class="carta" href="#/card/${esc(c.id)}">
       ${cardImg(c, 'low', 'loading="lazy" width="245" height="342"')}
       <span class="carta-nom">${cardText(c.name)}</span>
       <small>${setName ? `${cardText(setName)} · ` : ''}#${cardText(c.localId)}</small>
-    </a>`;
-};
+    </a>
+    ${ownButton(c)}
+  </div>`;
 const validCards = list => (Array.isArray(list) ? list : []).filter(c => c && typeof c.id === 'string' && CARD_ID.test(c.id));
 
 // Card search by name, in the site's language and in English (merged, newest sets first).
@@ -188,6 +190,7 @@ async function cardsView(sub, setId) {
   return {
     html: `
       <h1>${tr('Trading cards')}</h1>
+      <p><a class="btn sec" href="#/collection">📒 ${tr('My collection')} (${loadCollection().size})</a></p>
       <p class="subtitulo">${tr('Every set of the Pokémon Trading Card Game, from Base Set (1999) to today: {sets} sets and {cards} cards. Card data and prices come from TCGdex.', { sets: totalSets, cards: totalCards.toLocaleString(LANG) })}</p>
       <form class="filtros" id="cardSearch" role="search">
         <input id="cardQ" type="search" placeholder="${tr('Search cards: Charizard, Professor Oak…')}" aria-label="${tr('Search cards by name')}" value="${esc(q)}" maxlength="50">
@@ -263,7 +266,13 @@ async function cardSetView(setId) {
           <option value="">${tr('All cards')}</option>
           ${TCG_CATEGORIES.map(c => `<option value="${c}">${esc(tr(c === 'Pokemon' ? 'Pokémon' : c))}</option>`).join('')}
         </select>
+        <select id="setOwned" aria-label="${tr('My collection')}">
+          <option value="">${tr('Owned and missing')}</option>
+          <option value="owned">${tr('Only cards I have')}</option>
+          <option value="missing">${tr('Only cards I need')}</option>
+        </select>
       </div>
+      <div class="progreso" id="setProgress"></div>
       <div class="contador" id="setCount" aria-live="polite">${tr('{n} cards', { n: cards.length })}</div>
       <div class="cartas" id="setGrid">${cards.map(c => cardTile(c)).join('')}</div>`}`,
     mount() {
@@ -273,6 +282,10 @@ async function cardSetView(setId) {
       const cat = document.getElementById('setCat');
       const grid = document.getElementById('setGrid');
       const counter = document.getElementById('setCount');
+      const owned = document.getElementById('setOwned');
+      const progress = document.getElementById('setProgress');
+      const showProgress = () => { progress.innerHTML = collectionProgress(cards.filter(c => isOwned(c.id)).length, cards.length); };
+      showProgress();
       let token = 0;
       // Type and kind are filtered by TCGdex (the card list has no types); the name is filtered here.
       const apply = async () => {
@@ -291,7 +304,9 @@ async function cardSetView(setId) {
         const term = q.value.trim().toLowerCase();
         let shown = 0;
         for (const tile of grid.children) {
-          const show = (!allowed || allowed.has(tile.dataset.id)) && (!term || tile.dataset.name.includes(term));
+          const have = isOwned(tile.dataset.id);
+          const show = (!allowed || allowed.has(tile.dataset.id)) && (!term || tile.dataset.name.includes(term))
+            && (!owned.value || (owned.value === 'owned') === have);
           tile.hidden = !show;
           if (show) shown++;
         }
@@ -299,7 +314,14 @@ async function cardSetView(setId) {
       };
       let timer;
       q.oninput = () => { clearTimeout(timer); timer = setTimeout(apply, 150); };
-      type.onchange = cat.onchange = apply;
+      type.onchange = cat.onchange = owned.onchange = apply;
+      // Ticking a card updates the progress bar (and the list, when filtering by owned/missing).
+      const onChange = () => {
+        if (!grid.isConnected) { window.removeEventListener('pokeinfo:collection', onChange); return; }
+        showProgress();
+        if (owned.value) apply();
+      };
+      window.addEventListener('pokeinfo:collection', onChange);
     },
   };
 }
@@ -423,6 +445,7 @@ async function cardView(cardId) {
       </div>
       <div>
         <h1>${cardText(c.name)}</h1>
+        <p>${ownButton(c, true)} <a class="btn sec" href="#/collection">📒 ${tr('My collection')}</a></p>
         ${c.description ? `<p class="subtitulo"><i>${cardText(c.description)}</i></p>` : ''}
         ${facts}
         ${battle}

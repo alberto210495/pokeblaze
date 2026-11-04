@@ -466,4 +466,38 @@ const ES = {
   'All news': 'Todas las noticias',
   'In English': 'En inglés',
   'In Spanish': 'En español',
+  // Type charts in the team builder
+  'Uses the Generation 1 type chart.': 'Usa la tabla de tipos de la 1.ª generación.',
+  'Uses the Generation 2–5 type chart (before Fairy).': 'Usa la tabla de tipos de la 2.ª a la 5.ª generación (antes del tipo Hada).',
+  'Uses the current type chart.': 'Usa la tabla de tipos actual.',
+
+  // Card collection
+  'My collection': 'Mi colección',
+  'My card collection': 'Mi colección de cartas',
+  'Owned and missing': 'Tengo y me faltan',
+  'Only cards I have': 'Solo las que tengo',
+  'Only cards I need': 'Solo las que me faltan',
+  '{name} #{num} in my collection': '{name} n.º {num} en mi colección',
+  'In my collection': 'En mi colección',
+  'Add to my collection': 'Añadir a mi colección',
+  'Could not save your collection: this browser is blocking storage or is full.': 'No se ha podido guardar tu colección: este navegador bloquea el almacenamiento o está lleno.',
+  'You have {have} of {total} cards ({pct}%)': 'Tienes {have} de {total} cartas ({pct} %)',
+  'Tick the + on any card to add it. Your collection is saved in this browser; download a backup to keep it safe or move it to another device.':
+    'Pulsa el + de cualquier carta para añadirla. Tu colección se guarda en este navegador; descarga una copia de seguridad para no perderla o pasarla a otro dispositivo.',
+  'Sets started': 'Expansiones empezadas',
+  'Sets complete': 'Expansiones completas',
+  'Download backup': 'Descargar copia de seguridad',
+  'Restore from backup': 'Restaurar copia de seguridad',
+  'Clear collection': 'Vaciar la colección',
+  'Your collection is empty': 'Tu colección está vacía',
+  'Open any set and tick the cards you own.': 'Abre cualquier expansión y marca las cartas que tienes.',
+  'Browse sets': 'Ver expansiones',
+  'That file is too big to be a PokéInfo backup.': 'Ese archivo es demasiado grande para ser una copia de PokéInfo.',
+  'That file is not a PokéInfo collection backup.': 'Ese archivo no es una copia de seguridad de una colección de PokéInfo.',
+  'Backup restored: {n} cards added.': 'Copia restaurada: {n} cartas añadidas.',
+  'Remove every card from your collection? Download a backup first if you might want it back.': '¿Quitar todas las cartas de tu colección? Descarga antes una copia si puede que la quieras recuperar.',
+
+  // Offline and install
+  'Install app': 'Instalar la app',
+  "You're offline. Pages and data you have already opened still work.": 'Estás sin conexión. Las páginas y los datos que ya has abierto siguen funcionando.',
 };

@@ -470,3 +470,22 @@ table.precios td, table.precios th { white-space: nowrap; }
 .noticia-corta { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; text-decoration: none; }
 .noticia-corta small { color: var(--suave); }
 a.noticia-corta:hover { border-color: var(--rojo); }
+
+/* ---------- Card collection ---------- */
+.carta-item { position: relative; }
+.tengo {
+  position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid #fff; background: rgba(20, 22, 26, .65); color: #fff; font: inherit; font-weight: 800; font-size: 1rem;
+  cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+.tengo:hover { background: var(--rojo); }
+.tengo.si { background: #3fa129; }
+.tengo-grande.si { border-color: #3fa129; }
+.progreso { margin: 0 0 12px; }
+.progreso small { color: var(--suave); }
+.barra-progreso { height: 10px; border-radius: 999px; background: var(--borde); overflow: hidden; margin-bottom: 4px; max-width: 480px; }
+.barra-progreso > div { height: 100%; background: #3fa129; border-radius: 999px; }
+label.btn { cursor: pointer; }
+
+/* ---------- Offline notice ---------- */
+.aviso-offline { background: #3b3f4a; color: #fff; text-align: center; padding: 8px 16px; font-weight: 600; font-size: .9rem; }

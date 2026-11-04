@@ -43,6 +43,30 @@ const TYPE_CHART = {
   fairy: { double: ['fighting', 'dragon', 'dark'], half: ['fire', 'poison', 'steel'], zero: [] },
 };
 
+// The type chart as it was in a given generation, built from the current one:
+//   Gen 2–5: Steel also resisted Ghost and Dark (changed in Gen 6, when Fairy arrived).
+//   Gen 1:   on top of that, Ghost had no effect on Psychic, Bug was super effective on Poison,
+//            Poison was super effective on Bug, and Ice did normal damage to Fire.
+// Types that didn't exist yet (Dark, Steel before Gen 2; Fairy before Gen 6) are left out by typesOfGen() in app.js.
+function typeChartFor(gen) {
+  if (gen >= 6) return TYPE_CHART;
+  const chart = Object.fromEntries(Object.entries(TYPE_CHART).map(([t, e]) => [t, { double: [...e.double], half: [...e.half], zero: [...e.zero] }]));
+  // Move a defending type between an attacking type's lists (from/to: 'double', 'half', 'zero', or null for "normal damage").
+  const move = (atk, def, from, to) => {
+    if (from) chart[atk][from] = chart[atk][from].filter(t => t !== def);
+    if (to && !chart[atk][to].includes(def)) chart[atk][to].push(def);
+  };
+  move('ghost', 'steel', null, 'half');
+  move('dark', 'steel', null, 'half');
+  if (gen === 1) {
+    move('ghost', 'psychic', 'double', 'zero');
+    move('bug', 'poison', 'half', 'double');
+    move('poison', 'bug', null, 'double');
+    move('ice', 'fire', 'half', null);
+  }
+  return chart;
+}
+
 const STAT_NAMES = {
   hp: 'HP', attack: 'Attack', defense: 'Defense',
   'special-attack': 'Sp. Atk', 'special-defense': 'Sp. Def', speed: 'Speed',

@@ -68,9 +68,13 @@ async function readFeed(src) {
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const xml = await res.text();
+  return parseFeed(await res.text(), src);
+}
+
+// Feed XML → news items for one source (kept separate from fetching so the tests can use it).
+function parseFeed(xml, src, now = Date.now()) {
   const blocks = xml.match(/<item\b[\s\S]*?<\/item>/gi) || xml.match(/<entry\b[\s\S]*?<\/entry>/gi) || [];
-  const cutoff = Date.now() - MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+  const cutoff = now - MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
   return blocks.map(b => {
     const title = shorten(plain(tag(b, ['title'])), 200);
     const link = safeUrl(linkOf(b));
@@ -78,7 +82,7 @@ async function readFeed(src) {
     const summary = shorten(plain(tag(b, ['description', 'summary', 'content:encoded', 'content'])), 240);
     return { title, link, date, summary, source: src.id, lang: src.lang };
   })
-    .filter(it => it.title && it.link && Number.isFinite(it.date) && it.date >= cutoff && it.date <= Date.now() + 36e5)
+    .filter(it => it.title && it.link && Number.isFinite(it.date) && it.date >= cutoff && it.date <= now + 36e5)
     .filter(it => !src.filter || POKEMON.test(`${it.title} ${it.summary}`))
     .slice(0, PER_SOURCE);
 }
@@ -112,4 +116,6 @@ async function main() {
   console.log(`Wrote ${items.length} items to ${outFile}`);
 }
 
-main().catch(err => { console.error(err.message); process.exit(1); });
+if (require.main === module) main().catch(err => { console.error(err.message); process.exit(1); });
+
+module.exports = { parseFeed, plain, decode, safeUrl, shorten, SOURCES };

@@ -4,7 +4,7 @@
 //         #/guides  #/guide/:id[/walkthrough|locations|items]
 //         #/team[/:id.move.move,:id,…[/:game]]   #/nuzlocke[/:game]
 //         #/cards[?q=]  #/cards/set/:set  #/card/:card   (trading cards, in js/cards.js)
-//         #/news   (in js/news.js)
+//         #/news   (in js/news.js)   #/collection   (card checklist, in js/collection.js)
 //
 // Text shown to visitors goes through tr() (js/i18n.js) so it can be shown in Spanish.
 
@@ -77,7 +77,10 @@ function api(url, pick, maxAge = MAX_AGE) {
     const req = readStored(full, maxAge)
       .then(saved => saved || fetch(full, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-        .then(data => { const kept = pick ? pick(data) : data; writeStored(full, kept); return kept; }))
+        .then(data => { const kept = pick ? pick(data) : data; writeStored(full, kept); return kept; })
+        // Offline (or the server is down): an older saved copy is better than nothing. "Not found" stays an error.
+        .catch(err => (/HTTP 404/.test(err.message) ? Promise.reject(err)
+          : readStored(full, Infinity).then(old => (old ? old : Promise.reject(err))))))
       .catch(err => { cache.delete(full); throw err; });
     cache.set(full, req);
   }
@@ -99,8 +102,8 @@ async function mapLimit(items, limit, fn, onDone) {
   return results;
 }
 
-// Damage multiplier of each attacking type against a Pokémon with the given types.
-const defenses = types => Object.fromEntries(Object.entries(TYPE_CHART).map(([atk, eff]) => [atk,
+// Damage multiplier of each attacking type against a Pokémon with the given types (current chart unless given another).
+const defenses = (types, chart = TYPE_CHART) => Object.fromEntries(Object.entries(chart).map(([atk, eff]) => [atk,
   types.reduce((m, t) => m * (eff.zero.includes(t) ? 0 : eff.double.includes(t) ? 2 : eff.half.includes(t) ? 0.5 : 1), 1)]));
 
 const sprite = id => `${SPRITES}/${id}.png`;
@@ -243,6 +246,7 @@ function home() {
           <p>${tr('Your guide to the Pokémon world: details on every Pokémon, every region and every main-series game, plus what makes each version different.')}</p>
           <a class="btn sec" href="#/pokedex">${tr('Explore the Pokédex')}</a>
           <button class="btn sec" id="randomBtn">🎲 ${tr('Random Pokémon')}</button>
+          <button class="btn sec" id="installBtn" hidden>📲 ${tr('Install app')}</button>
         </div>
         <img src="${artwork(featured)}" alt="${tr('Featured Pokémon')}">
       </section>
@@ -272,6 +276,7 @@ function home() {
         location.hash = `#/pokemon/${1 + Math.floor(Math.random() * TOTAL)}`;
       };
       renderHomeNews();
+      showInstallButton();
     },
   };
 }
@@ -1110,7 +1115,7 @@ function typesInGen(p, gen) {
 const typesOfGen = gen => Object.keys(TYPE_CHART)
   .filter(t => !(t === 'fairy' && gen < 6) && !((t === 'dark' || t === 'steel') && gen < 2));
 // Defending types that resist (or are immune to) an attacking type.
-const resistersOf = atk => [...TYPE_CHART[atk].half, ...TYPE_CHART[atk].zero];
+const resistersOf = (atk, chart = TYPE_CHART) => [...chart[atk].half, ...chart[atk].zero];
 
 const MULT_LABEL = { 4: '×4', 2: '×2', 1: '', 0.5: '½', 0.25: '¼', 0: '0' };
 const MULT_CLASS = { 4: 'x4', 2: 'x2', 1: '', 0.5: 'x05', 0.25: 'x025', 0: 'x0' };
@@ -1189,13 +1194,14 @@ async function team(param, gameParam) {
   let suggestions = '';
   if (team.length) {
     const allTypes = typesOfGen(gen);
-    const defs = team.map(m => defenses(m.types));
+    const chart = typeChartFor(gen); // the chart of the chosen game's generation
+    const defs = team.map(m => defenses(m.types, chart));
     const rows = allTypes.map(atk => {
       const vals = defs.map(d => d[atk]);
       return { atk, vals, weak: vals.filter(v => v > 1).length, resist: vals.filter(v => v < 1).length };
     });
     const threats = rows.filter(r => r.weak >= 2 && r.weak > r.resist).sort((a, b) => b.weak - a.weak || a.resist - b.resist);
-    const covered = allTypes.filter(def => team.some(m => m.attackTypes.some(t => has(TYPE_CHART, t) && TYPE_CHART[t].double.includes(def))));
+    const covered = allTypes.filter(def => team.some(m => m.attackTypes.some(t => has(chart, t) && chart[t].double.includes(def))));
     const uncovered = allTypes.filter(t => !covered.includes(t));
     const byMoves = team.filter(m => m.usesMoves).length;
     const coverageNote = byMoves === team.length ? tr('Types your chosen attacking moves hit super-effectively.')
@@ -1205,13 +1211,13 @@ async function team(param, gameParam) {
     // Pokémon that have a type resisting the biggest threats (one /type list per resisting type, cached).
     if (threats.length && team.length < TEAM_SIZE) {
       const top = threats.slice(0, 3).map(r => r.atk);
-      const resTypes = [...new Set(top.flatMap(resistersOf))].filter(t => allTypes.includes(t));
+      const resTypes = [...new Set(top.flatMap(atk => resistersOf(atk, chart)))].filter(t => allTypes.includes(t));
       const lists = new Map((await Promise.all(resTypes.map(t => api(`/type/${t}`)
         .then(d => [t, new Set(d.pokemon.map(x => idFromUrl(x.pokemon.url)))]).catch(() => null)))).filter(Boolean));
       const inTeam = new Set(team.map(m => m.id));
       const picks = pool
         .filter(id => !inTeam.has(id))
-        .map(id => ({ id, helps: top.filter(atk => resistersOf(atk).some(t => lists.has(t) && lists.get(t).has(id))) }))
+        .map(id => ({ id, helps: top.filter(atk => resistersOf(atk, chart).some(t => lists.has(t) && lists.get(t).has(id))) }))
         .filter(x => x.helps.length)
         .sort((a, b) => b.helps.length - a.helps.length || a.id - b.id)
         .slice(0, 8);
@@ -1250,7 +1256,7 @@ async function team(param, gameParam) {
       </div>
 
       <h2>${tr('Weakness chart')}</h2>
-      <p class="subtitulo">${tr('Damage each attacking type deals to each team member.')}${gen < 6 ? ' ' + tr('Uses the modern type chart; a few matchups were different in older games.') : ''}</p>
+      <p class="subtitulo">${tr('Damage each attacking type deals to each team member.')}${' ' + tr(gen === 1 ? 'Uses the Generation 1 type chart.' : gen < 6 ? 'Uses the Generation 2–5 type chart (before Fairy).' : 'Uses the current type chart.')}</p>
       <div class="tabla-wrap">
         <table class="defensa">
           <thead><tr><th>${tr('Attack')}</th>${team.map(m => `<th><img src="${sprite(m.id)}" alt="${nameOf(m.id)}" title="${nameOf(m.id)}"></th>`).join('')}<th>${tr('Weak')}</th><th>${tr('Resist')}</th></tr></thead>
@@ -1572,9 +1578,9 @@ const ROUTES = {
   regions, region: regionDetail,
   games, game: gameDetail, compare,
   guides, guide: guideView, team, nuzlocke,
-  cards: cardsView, card: cardView, news: newsView,
+  cards: cardsView, card: cardView, news: newsView, collection: collectionView,
 };
-const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides', card: 'cards' };
+const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides', card: 'cards', collection: 'cards' };
 let renderToken = 0;
 let lastRoute = null;
 
@@ -1699,6 +1705,32 @@ document.addEventListener('error', e => {
   box.append(name, note);
   img.replaceWith(box);
 }, true);
+
+// ---------- Offline and install ----------
+// sw.js keeps the site's files so it opens without internet; it needs http(s), so not when opened as a file.
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* the site still works, just not offline */ });
+}
+const offlineBar = document.getElementById('offlineBar');
+const showOnline = () => { offlineBar.hidden = navigator.onLine; };
+window.addEventListener('online', showOnline);
+window.addEventListener('offline', showOnline);
+showOnline();
+
+// Browsers that support installing (Chrome, Edge, Android) offer it through this event; show our button then.
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstallButton(); });
+window.addEventListener('appinstalled', () => { installPrompt = null; showInstallButton(); });
+function showInstallButton() {
+  const btn = document.getElementById('installBtn');
+  if (!btn) return;
+  btn.hidden = !installPrompt;
+  btn.onclick = () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    installPrompt.userChoice.finally(() => { installPrompt = null; showInstallButton(); });
+  };
+}
 
 window.addEventListener('hashchange', router);
 router();
