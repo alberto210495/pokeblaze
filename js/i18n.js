@@ -429,6 +429,11 @@ const ES = {
   'Market': 'Mercado',
   'Prices are a rough guide: they change every day and depend on condition, language and version.': 'Los precios son solo orientativos: cambian cada día y dependen del estado, el idioma y la versión.',
   'Loading cards…': 'Cargando cartas…',
+  'No picture available': 'Imagen no disponible',
+  'No card list for this set yet': 'Todavía no hay lista de cartas para esta expansión',
+  'TCGdex lists this set ({n} cards) but has not added its cards yet, so there is nothing to show. It will appear here on its own once TCGdex adds them.':
+    'TCGdex tiene esta expansión ({n} cartas) pero todavía no ha añadido sus cartas, así que no hay nada que mostrar. Aparecerán aquí solas cuando TCGdex las añada.',
+  'no picture available': 'imagen no disponible',
   '{n} cards, newest sets first.': '{n} cartas, de las expansiones más nuevas a las más antiguas.',
   'No trading cards found for this Pokémon.': 'No hay cartas de este Pokémon.',
   'Could not load the cards. Close and reopen this box to retry.': 'No se han podido cargar las cartas. Cierra y vuelve a abrir este apartado para reintentarlo.',

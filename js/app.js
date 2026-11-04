@@ -1665,14 +1665,33 @@ applyStaticText();
 
 document.getElementById('menuBtn').onclick = () => setMenuOpen(!document.getElementById('nav').classList.contains('abierto'));
 
-// Missing sprite → official artwork (see imgFallback). Image errors don't bubble, so listen in the capture phase.
+// Pictures that fail to load try their next source. Image errors don't bubble, so listen in the capture phase.
+//   data-fallback:  one backup (a missing sprite → the official artwork)
+//   data-fallbacks: a space-separated list of backups (trading cards, see js/cards.js);
+//                   when it runs out, data-missing puts a "no picture" card in place of the image.
 document.addEventListener('error', e => {
   const img = e.target;
-  if (img instanceof HTMLImageElement && img.dataset.fallback) {
+  if (!(img instanceof HTMLImageElement)) return;
+  if (img.dataset.fallback) {
     const src = img.dataset.fallback;
     delete img.dataset.fallback; // only try once
     img.src = src;
+    return;
   }
+  if (img.dataset.fallbacks === undefined) return;
+  const [next, ...rest] = img.dataset.fallbacks.split(' ').filter(Boolean);
+  if (next) { img.dataset.fallbacks = rest.join(' '); img.src = next; return; }
+  if (img.dataset.missing === undefined) return;
+  const box = document.createElement('div');
+  box.className = 'carta-sin' + (img.dataset.missingBig ? ' grande' : '');
+  box.setAttribute('role', 'img');
+  box.setAttribute('aria-label', `${img.dataset.missing}: ${tr('no picture available')}`);
+  const name = document.createElement('b');
+  name.textContent = img.dataset.missing; // textContent: never parsed as HTML
+  const note = document.createElement('small');
+  note.textContent = tr('No picture available');
+  box.append(name, note);
+  img.replaceWith(box);
 }, true);
 
 window.addEventListener('hashchange', router);

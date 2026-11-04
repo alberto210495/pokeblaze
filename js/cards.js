@@ -52,7 +52,65 @@ async function tcgGet(path, maxAge) {
 
 // Only use image and logo addresses on TCGdex's own image server.
 const tcgAsset = (url, file) => (typeof url === 'string' && url.startsWith(TCG_ASSETS) ? `${url}${file}` : null);
-const cardImage = (c, quality = 'low') => tcgAsset(c && c.image, `/${quality}.webp`);
+// About 7% of cards have no picture on TCGdex, and a few of its pictures fail to load. For those, try other
+// sources in order: the Pokémon TCG API's image server, then TCGdex's own copy of the card in another language.
+// Checked set by set in November 2026; sets not listed here had no picture anywhere.
+//   ptcg:  the set's id on images.pokemontcg.io      langs/serie: TCGdex languages that have the picture
+const PTCG_IMAGES = 'https://images.pokemontcg.io/';
+const IMAGE_FALLBACKS = {
+  '2011bw': { ptcg: 'mcd11' }, '2012bw': { ptcg: 'mcd12' }, '2016xy': { ptcg: 'mcd16' }, '2019sm': { ptcg: 'mcd19' },
+  '2021swsh': { ptcg: 'mcd21' }, '2022swsh': { ptcg: 'mcd22' }, bog: { ptcg: 'bp' }, bwp: { ptcg: 'bwp' }, ecard3: { ptcg: 'ecard3' },
+  hgssp: { ptcg: 'hsp' }, pop6: { ptcg: 'pop6' }, 'sm3.5': { ptcg: 'sm35' }, sm6: { ptcg: 'sm6' }, 'sm7.5': { ptcg: 'sm75' },
+  smp: { ptcg: 'smp' }, sve: { ptcg: 'sve' }, svp: { ptcg: 'svp' }, 'swsh4.5sv': { ptcg: 'swsh45sv' }, swsh9tg: { ptcg: 'swsh9tg' },
+  swsh10tg: { ptcg: 'swsh10tg' }, swsh11tg: { ptcg: 'swsh11tg' }, swsh12tg: { ptcg: 'swsh12tg' }, 'swsh12.5gg': { ptcg: 'swsh12pt5gg' },
+  swshp: { ptcg: 'swshp' }, xyp: { ptcg: 'xyp' },
+  'tk-ex-latia': { ptcg: 'tk1a' }, 'tk-ex-latio': { ptcg: 'tk1b' }, 'tk-ex-p': { ptcg: 'tk2a' }, 'tk-ex-m': { ptcg: 'tk2b' },
+  ecard2: { serie: 'ecard', langs: ['fr'] }, pl2: { serie: 'pl', langs: ['fr'] }, sm2: { serie: 'sm', langs: ['fr'] }, xy8: { serie: 'xy', langs: ['fr'] },
+  'tk-bw-e': { serie: 'tk', langs: ['es', 'it'] }, 'tk-bw-z': { serie: 'tk', langs: ['es', 'it'] },
+  'tk-sm-l': { serie: 'tk', langs: ['it', 'es'] }, 'tk-sm-r': { serie: 'tk', langs: ['it', 'es'] },
+  ...Object.fromEntries(['b', 'latia', 'latio', 'n', 'p', 'su', 'sy', 'w'].map(k => [`tk-xy-${k}`, { serie: 'tk', langs: ['it', 'es'] }])),
+};
+// The Pokémon TCG API's id for a TCGdex set that isn't listed above ("sv03.5" → "sv3pt5", "sm7.5" → "sm75").
+const ptcgSetId = id => {
+  const sv = id.match(/^sv0?(\d+)(\.5)?$/);
+  if (sv) return `sv${sv[1]}${sv[2] ? 'pt5' : ''}`;
+  return id.replace(/^swsh12\.5/, 'swsh12pt5').replace(/\./g, '');
+};
+
+// Every address worth trying for a card's picture, best first. quality: 'low' for grids, 'high' for the card page.
+function cardSources(c, quality = 'low') {
+  if (!c || typeof c.id !== 'string' || !CARD_ID.test(c.id)) return [];
+  const setId = setIdOfCard(c.id);
+  const rule = has(IMAGE_FALLBACKS, setId) ? IMAGE_FALLBACKS[setId] : {};
+  const num = String(c.localId || '');
+  const out = [];
+  const own = tcgAsset(c.image, `/${quality}.webp`);
+  if (own) out.push(own);
+  // Pokémon TCG API: for listed sets, or as a backup when a TCGdex picture fails to load.
+  const ptcg = rule.ptcg || (own ? ptcgSetId(setId) : null);
+  if (ptcg && num) {
+    const file = quality === 'high' ? '_hires.png' : '.png';
+    // It sometimes numbers cards without leading zeros ("001" → "1", "H01" → "H1").
+    [...new Set([num, num.replace(/^([A-Za-z]*)0+(?=\d)/, '$1')])]
+      .forEach(n => out.push(`${PTCG_IMAGES}${encodeURIComponent(ptcg)}/${encodeURIComponent(n)}${file}`));
+  }
+  (rule.langs || []).forEach(lang => {
+    if (num) out.push(`${TCG_ASSETS}${lang}/${rule.serie}/${encodeURIComponent(setId)}/${encodeURIComponent(num)}/${quality}.webp`);
+  });
+  return out;
+}
+
+// A card picture that tries each source in turn (see the image-error listener in app.js), ending with a
+// "no picture" card if none works.
+function cardImg(c, quality, attrs) {
+  const [first, ...rest] = cardSources(c, quality);
+  if (!first) return noPicture(c, quality === 'high');
+  return `<img src="${esc(first)}" alt="${cardText(c.name)}" ${attrs} data-fallbacks="${esc(rest.join(' '))}" data-missing="${cardText(c.name)}" data-missing-big="${quality === 'high' ? '1' : ''}">`;
+}
+const noPicture = (c, big) => `
+  <div class="carta-sin${big ? ' grande' : ''}" role="img" aria-label="${cardText(c.name)}: ${tr('no picture available')}">
+    <b>${cardText(c.name)}</b><small>${tr('No picture available')}</small>
+  </div>`;
 const setIdOfCard = id => id.slice(0, id.lastIndexOf('-'));
 
 const energyColor = t => (has(ENERGY_COLORS, t) ? ENERGY_COLORS[t] : '#888');
@@ -70,10 +128,9 @@ async function tcgSets() {
 }
 
 const cardTile = (c, setName) => {
-  const img = cardImage(c);
   return `
     <a class="carta" href="#/card/${esc(c.id)}" data-id="${esc(c.id)}" data-name="${cardText(String(c.name).toLowerCase())}">
-      ${img ? `<img loading="lazy" src="${img}" alt="${cardText(c.name)}" width="245" height="342">` : `<div class="carta-sin">${cardText(c.name)}</div>`}
+      ${cardImg(c, 'low', 'loading="lazy" width="245" height="342"')}
       <span class="carta-nom">${cardText(c.name)}</span>
       <small>${setName ? `${cardText(setName)} · ` : ''}#${cardText(c.localId)}</small>
     </a>`;
@@ -190,6 +247,12 @@ async function cardSetView(setId) {
           </div>
         </div>
       </div>
+      ${!cards.length ? `
+        <div class="tarjeta aviso-vacio">
+          <h2>${tr('No card list for this set yet')}</h2>
+          <p>${tr('TCGdex lists this set ({n} cards) but has not added its cards yet, so there is nothing to show. It will appear here on its own once TCGdex adds them.', { n: Number(count.total) || 0 })}</p>
+          <a class="btn sec" href="#/cards">← ${tr('All sets')}</a>
+        </div>` : `
       <div class="filtros">
         <input id="setQ" type="search" placeholder="${tr('Filter by name…')}" aria-label="${tr('Filter cards by name')}">
         <select id="setType" aria-label="${tr('Type')}">
@@ -202,9 +265,10 @@ async function cardSetView(setId) {
         </select>
       </div>
       <div class="contador" id="setCount" aria-live="polite">${tr('{n} cards', { n: cards.length })}</div>
-      <div class="cartas" id="setGrid">${cards.map(c => cardTile(c)).join('')}</div>`,
+      <div class="cartas" id="setGrid">${cards.map(c => cardTile(c)).join('')}</div>`}`,
     mount() {
       const q = document.getElementById('setQ');
+      if (!q) return; // empty set: no filters to wire up
       const type = document.getElementById('setType');
       const cat = document.getElementById('setCat');
       const grid = document.getElementById('setGrid');
@@ -263,8 +327,8 @@ async function cardView(cardId) {
   const prev = pos > 0 ? inSet[pos - 1] : null;
   const next = pos >= 0 && pos < inSet.length - 1 ? inSet[pos + 1] : null;
 
-  const img = cardImage(c, 'high');
-  const big = tcgAsset(c.image, '/high.png');
+  const sources = cardSources(c, 'high');
+  const big = tcgAsset(c.image, '/high.png') || sources[0];
   const setInfo = c.set || {};
   const official = setInfo.cardCount && setInfo.cardCount.official;
   const row = (label, value) => (value === '' || value == null ? '' : `<tr><th>${label}</th><td>${value}</td></tr>`);
@@ -351,7 +415,7 @@ async function cardView(cardId) {
     <a class="volver" href="#/cards/set/${esc(setId)}">← ${cardText(setInfo.name || tr('Set'))}</a>
     <div class="detalle-carta">
       <div class="imagen-carta">
-        ${img ? `<a href="${big || img}" target="_blank" rel="noopener noreferrer" title="${tr('Open the full-size image')}"><img src="${img}" alt="${cardText(c.name)}" width="600" height="825"></a>` : `<div class="carta-sin grande">${cardText(c.name)}</div>`}
+        ${sources.length ? `<a href="${esc(big)}" target="_blank" rel="noopener noreferrer" title="${tr('Open the full-size image')}">${cardImg(c, 'high', 'width="600" height="825"')}</a>` : noPicture(c, true)}
         <div class="navpoke">
           ${prev ? `<a class="btn sec" href="#/card/${esc(prev.id)}">← ${cardText(prev.name)}</a>` : '<span></span>'}
           ${next ? `<a class="btn sec" href="#/card/${esc(next.id)}">${cardText(next.name)} →</a>` : ''}

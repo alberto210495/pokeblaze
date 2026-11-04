@@ -419,10 +419,17 @@ a.set:hover { border-color: var(--rojo); }
 .carta:hover img { transform: translateY(-3px); }
 .carta-nom { font-weight: 700; font-size: .9rem; margin-top: 4px; }
 .carta small { color: var(--suave); font-size: .78rem; }
+/* Shown when no source has a picture of the card: a plain card shape with its name. */
 .carta-sin {
-  aspect-ratio: 245 / 342; display: grid; place-items: center; padding: 10px; border-radius: 8px;
-  border: 2px dashed var(--borde); color: var(--suave); font-weight: 700;
+  aspect-ratio: 245 / 342; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px; border-radius: 8px; text-align: center; color: var(--texto);
+  background: linear-gradient(160deg, var(--tarjeta), var(--fondo)); border: 3px solid #e3b23c;
+  box-shadow: var(--sombra);
 }
+.carta-sin b { font-size: .95rem; }
+.carta-sin small { color: var(--suave); font-size: .75rem; }
+.carta-sin.grande { border-width: 6px; border-radius: 16px; }
+.carta-sin.grande b { font-size: 1.4rem; }
 .carta-sin.grande { width: 100%; }
 
 .detalle-carta { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 28px; align-items: start; }
@@ -443,3 +450,5 @@ a.set:hover { border-color: var(--rojo); }
   color: #fff; font-size: .7rem; font-weight: 800; text-shadow: 0 1px 1px rgba(0, 0, 0, .4); vertical-align: middle;
 }
 table.precios td, table.precios th { white-space: nowrap; }
+.aviso-vacio { padding: 20px 24px; }
+.aviso-vacio h2 { margin-top: 0; }

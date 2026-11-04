@@ -62,6 +62,7 @@ Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `
 | Regions, games, version exclusives, type chart | `js/data.js` |
 | Gyms, Elite Four, key items, gift Pokémon | `js/guides.js` |
 | Trading cards, sets and card prices | [TCGdex](https://tcgdex.dev), live (prices cached for a day) |
+| Card pictures TCGdex doesn't have | [Pokémon TCG API](https://pokemontcg.io) image server |
 | Spanish and English names of moves, abilities, places, types | `js/names.js`, built from PokeAPI by `tools/build-names.js` |
 
 PokeAPI responses are cached in the browser for 7 days, so pages you have visited load quickly.
@@ -71,6 +72,7 @@ PokeAPI responses are cached in the browser for 7 days, so pages you have visite
 - PokeAPI's encounter data is thorough for the older games but patchy or missing for newer ones. Those locations show "No wild Pokémon recorded".
 - Legends: Z-A has no key-item list: its key items are side-mission props, not story items. Legends: Arceus lists only its starters as gift Pokémon.
 - In Legends: Arceus and Scarlet & Violet, the items tab lists ride Pokémon and ride abilities, which take the place of HMs.
+- About 7% of trading cards have no picture on TCGdex. For those, the site tries the [Pokémon TCG API](https://pokemontcg.io)'s images and TCGdex's prints in other languages (`IMAGE_FALLBACKS` in `js/cards.js`). About 600 cards still have no picture anywhere, mostly TCG Pocket's digital cards, the newest Mega Evolution sets, some trainer kits and McDonald's sets; they show a "No picture available" card.
 - The team builder uses the modern type chart. A few matchups were different in older games.
 
 ### Adding guide data
