@@ -122,7 +122,7 @@ const ES = {
   'Z-A Royale ranks': 'Rangos del Z-A Royale',
 
   // Home
-  'Welcome to PokéInfo': 'Bienvenido a PokéInfo',
+  'Welcome to PokéBlaze': 'Bienvenido a PokéBlaze',
   'Your guide to the Pokémon world: details on every Pokémon, every region and every main-series game, plus what makes each version different.':
     'Tu guía del mundo Pokémon: todos los Pokémon, todas las regiones y todos los juegos principales, y lo que hace diferente a cada versión.',
   'Explore the Pokédex': 'Explorar la Pokédex',
@@ -461,7 +461,7 @@ const ES = {
   'Yesterday': 'Ayer',
   'Source': 'Fuente',
   'All sources ({n})': 'Todas las fuentes ({n})',
-  'Sources: {list}. PokéInfo is not affiliated with these sites.': 'Fuentes: {list}. PokéInfo no tiene relación con estas webs.',
+  'Sources: {list}. PokéBlaze is not affiliated with these sites.': 'Fuentes: {list}. PokéBlaze no tiene relación con estas webs.',
   'Latest news': 'Últimas noticias',
   'All news': 'Todas las noticias',
   'In English': 'En inglés',
@@ -492,8 +492,8 @@ const ES = {
   'Your collection is empty': 'Tu colección está vacía',
   'Open any set and tick the cards you own.': 'Abre cualquier expansión y marca las cartas que tienes.',
   'Browse sets': 'Ver expansiones',
-  'That file is too big to be a PokéInfo backup.': 'Ese archivo es demasiado grande para ser una copia de PokéInfo.',
-  'That file is not a PokéInfo collection backup.': 'Ese archivo no es una copia de seguridad de una colección de PokéInfo.',
+  'That file is too big to be a PokéBlaze backup.': 'Ese archivo es demasiado grande para ser una copia de PokéBlaze.',
+  'That file is not a PokéBlaze collection backup.': 'Ese archivo no es una copia de seguridad de una colección de PokéBlaze.',
   'Backup restored: {n} cards added.': 'Copia restaurada: {n} cartas añadidas.',
   'Remove every card from your collection? Download a backup first if you might want it back.': '¿Quitar todas las cartas de tu colección? Descarga antes una copia si puede que la quieras recuperar.',
 

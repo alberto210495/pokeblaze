@@ -64,7 +64,7 @@ const shorten = (s, max) => {
 
 async function readFeed(src) {
   const res = await fetch(src.feed, {
-    headers: { 'user-agent': 'PokeInfoNews/1.0 (+https://github.com/alberto210495/pokemon-web)', accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml' },
+    headers: { 'user-agent': 'PokeBlazeNews/1.0 (+https://github.com/alberto210495/pokemon-web)', accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml' },
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

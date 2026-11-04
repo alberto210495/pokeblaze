@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- PokéInfo app icon: the site's ball logo on a red square. The ball stays inside the central 80% (maskable safe zone). -->
+  <!-- PokéBlaze app icon: the site's ball logo on a red square. The ball stays inside the central 80% (maskable safe zone). -->
   <rect width="512" height="512" fill="#e3350d"/>
   <circle cx="256" cy="256" r="150" fill="#fff" stroke="#1d1f24" stroke-width="20"/>
   <path d="M106 256a150 150 0 0 1 300 0z" fill="#ff5a3c" stroke="#1d1f24" stroke-width="20" stroke-linejoin="round"/>

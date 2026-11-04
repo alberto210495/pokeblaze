@@ -1,4 +1,4 @@
-# PokéInfo
+# PokéBlaze
 
 A fan-made guide to the Pokémon series: every Pokémon, region and main-series game, with per-game walkthroughs, wild Pokémon locations, key items, a team builder, a Nuzlocke tracker, every card of the trading card game and daily Pokémon news. In English and Spanish.
 

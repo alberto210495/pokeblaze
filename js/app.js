@@ -1,4 +1,4 @@
-// PokéInfo — single-page app with hash routing.
+// PokéBlaze — single-page app with hash routing.
 // Routes: #/  #/pokedex[?gen=&type=&q=]  #/pokemon/:id  #/regions  #/region/:id
 //         #/games  #/game/:id  #/compare[/:a/:b]
 //         #/guides  #/guide/:id[/walkthrough|locations|items]
@@ -389,7 +389,7 @@ async function home() {
     html: `
       <section class="hero">
         <div class="hero-texto">
-          <h1>${tr('Welcome to PokéInfo')}</h1>
+          <h1>${tr('Welcome to PokéBlaze')}</h1>
           <p>${tr('Your guide to the Pokémon world: every Pokémon, game, guide and trading card, plus tools for your team, your Nuzlocke runs and your card collection.')}</p>
           <div class="buscador" role="search">
             ${icon('search', 'buscador-icono')}
@@ -1814,7 +1814,7 @@ document.addEventListener('keydown', e => {
 // On a re-render of the same page (adding to a team, changing a select) focus returns to the control that had it.
 function afterRender(route, keepId) {
   const h1 = app.querySelector('h1');
-  document.title = h1 && route ? `${h1.textContent.trim()} · PokéInfo` : 'PokéInfo';
+  document.title = h1 && route ? `${h1.textContent.trim()} · PokéBlaze` : 'PokéBlaze';
   if (lastRoute === null) { lastRoute = route; return; } // first load: leave focus where the browser put it
   const keep = route === lastRoute && keepId && document.getElementById(keepId);
   lastRoute = route;

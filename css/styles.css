@@ -635,3 +635,64 @@ nav { align-items: center; }
   .esq { animation: none; }
   .seccion, .poke, .juego, .region, .carta img, .del-dia { transition: none; }
 }
+
+/* ---------- Background art: Groudon ----------
+   Faded official artwork fixed to the bottom right of the window, with a lava-coloured glow, behind every page.
+   It sits under the content (z-index -1); cards keep their solid backgrounds, so text stays readable. */
+body::before, body::after { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+body::before { background: radial-gradient(ellipse at 88% 92%, rgba(227, 53, 13, .22), transparent 55%); }
+body::after {
+  background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/383.png')
+    right -4vw bottom -6vh / min(58vw, 880px) auto no-repeat;
+  opacity: .2;
+}
+:root[data-theme="light"] body::after { opacity: .13; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) body::after { opacity: .13; } }
+@media (max-width: 900px) {
+  body::after { background-size: 90vw auto; background-position: right -18vw bottom -4vh; opacity: .09; }
+}
+
+/* ---------- Home hero: a collage of Fire-type Pokémon ----------
+   Official artwork (same image server as the rest of the site), faded and blended into the red gradient so the
+   white text stays readable. Only on wider screens, so phones don't download eight extra pictures. */
+.hero { position: relative; overflow: hidden; isolation: isolate; }
+.hero > * { position: relative; z-index: 1; }
+@media (min-width: 721px) {
+  .hero::before {
+    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/146.png') 63% -95px / 270px auto no-repeat,  /* Moltres */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png') 52% 40% / 330px auto no-repeat,     /* Charizard */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/257.png') 74% calc(100% + 45px) / 220px auto no-repeat, /* Blaziken */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/392.png') 38% calc(100% + 70px) / 200px auto no-repeat, /* Infernape */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/157.png') 3% calc(100% + 85px) / 230px auto no-repeat,  /* Typhlosion */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/815.png') 89% -70px / 210px auto no-repeat,  /* Cinderace */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png') calc(100% + 40px) calc(100% + 60px) / 260px auto no-repeat, /* Arcanine */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/727.png') 22% -90px / 210px auto no-repeat;  /* Incineroar */
+    opacity: .3;
+    mix-blend-mode: luminosity;
+  }
+}
+
+/* ---------- Top bar: a row of faded Fire-type Pokémon ----------
+   Same artwork as the home collage (already cached on the home page), in the empty space between the logo and
+   the menu, fading out before the menu links. Drawn inside the bar, so the drop-down menus still open normally.
+   Only on wide screens: below 900 px the menu collapses and the bar stays plain. */
+.topbar { isolation: isolate; }
+.topbar > * { position: relative; z-index: 1; }
+@media (min-width: 901px) {
+  .topbar::before {
+    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/257.png') 16% 30% / 110px auto no-repeat,  /* Blaziken */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/146.png') 24% 45% / 150px auto no-repeat,  /* Moltres */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png') 33% 35% / 130px auto no-repeat,    /* Charizard */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/392.png') 41% 25% / 105px auto no-repeat,  /* Infernape */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png') 49% 40% / 125px auto no-repeat,   /* Arcanine */
+      url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/815.png') 57% 20% / 100px auto no-repeat;  /* Cinderace */
+    opacity: .32;
+    mix-blend-mode: luminosity;
+    -webkit-mask-image: linear-gradient(to right, transparent 9%, #000 18%, #000 52%, transparent 66%);
+    mask-image: linear-gradient(to right, transparent 9%, #000 18%, #000 52%, transparent 66%);
+  }
+}

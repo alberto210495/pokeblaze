@@ -97,7 +97,7 @@ async function newsView() {
             ${day.items.map(it => newsItem(it, news)).join('')}
           </section>`).join('')}
       </div>
-      <p class="nota">${tr('Sources: {list}. PokéInfo is not affiliated with these sites.', {
+      <p class="nota">${tr('Sources: {list}. PokéBlaze is not affiliated with these sites.', {
         list: [...news.sources].map(([, s]) => (s.site ? `<a href="${esc(s.site)}" target="_blank" rel="noopener noreferrer">${esc(s.name)}</a>` : esc(s.name))).join(', '),
       })}</p>`,
     mount() {

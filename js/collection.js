@@ -139,11 +139,11 @@ async function collectionView() {
       const msg = document.getElementById('colMsg');
       const exp = document.getElementById('colExport');
       if (exp) exp.onclick = () => {
-        const data = JSON.stringify({ app: 'PokéInfo', version: 1, exported: new Date().toISOString(), cards: Object.fromEntries(loadCollection()) }, null, 1);
+        const data = JSON.stringify({ app: 'PokéBlaze', version: 1, exported: new Date().toISOString(), cards: Object.fromEntries(loadCollection()) }, null, 1);
         const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
         const a = document.createElement('a');
         a.href = url;
-        a.download = `pokeinfo-collection-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `pokeblaze-collection-${new Date().toISOString().slice(0, 10)}.json`;
         document.body.append(a);
         a.click();
         a.remove();
@@ -152,11 +152,11 @@ async function collectionView() {
       document.getElementById('colImport').onchange = e => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { msg.textContent = tr('That file is too big to be a PokéInfo backup.'); return; }
+        if (file.size > 5 * 1024 * 1024) { msg.textContent = tr('That file is too big to be a PokéBlaze backup.'); return; }
         file.text().then(text => {
           let data;
           try { data = JSON.parse(text); } catch { data = null; }
-          if (!data || typeof data.cards !== 'object') { msg.textContent = tr('That file is not a PokéInfo collection backup.'); return; }
+          if (!data || typeof data.cards !== 'object') { msg.textContent = tr('That file is not a PokéBlaze collection backup.'); return; }
           const added = addValidCards(loadCollection(), data.cards);
           if (!saveCollection()) { msg.textContent = tr('Could not save your collection: this browser is blocking storage or is full.'); return; }
           router().then(() => {

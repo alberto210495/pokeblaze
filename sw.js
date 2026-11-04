@@ -1,4 +1,4 @@
-// Service worker: lets PokéInfo open without internet and be installed as an app.
+// Service worker: lets PokéBlaze open without internet and be installed as an app.
 // It keeps a copy of the site's own files. Data from PokeAPI, TCGdex and the news file is saved by the page
 // itself (see api() in js/app.js), which falls back to saved copies when offline.
 //

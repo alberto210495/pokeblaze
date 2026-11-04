@@ -1,6 +1,6 @@
 {
-  "name": "PokéInfo",
-  "short_name": "PokéInfo",
+  "name": "PokéBlaze",
+  "short_name": "PokéBlaze",
   "description": "Pokédex, game guides, team builder, Nuzlocke tracker, trading cards and Pokémon news.",
   "start_url": "./",
   "scope": "./",
