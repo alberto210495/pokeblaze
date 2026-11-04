@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <!-- Content Security Policy: the browser may only run this site's own scripts, and only load data from
-       PokeAPI and TCGdex (trading cards), images from PokeAPI's GitHub, TCGdex and the Pokémon TCG API (for card pictures TCGdex lacks), and the Google font. Update it if you add a new source. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com https://assets.tcgdex.net https://images.pokemontcg.io; media-src https://raw.githubusercontent.com; connect-src https://pokeapi.co https://api.tcgdex.net; base-uri 'none'; form-action 'none'; object-src 'none'">
+       PokeAPI, TCGdex (trading cards) and this site's news file on GitHub, images from PokeAPI's GitHub, TCGdex and the Pokémon TCG API (for card pictures TCGdex lacks), and the Google font. Update it if you add a new source. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com https://assets.tcgdex.net https://images.pokemontcg.io; media-src https://raw.githubusercontent.com; connect-src https://pokeapi.co https://api.tcgdex.net https://raw.githubusercontent.com; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PokéInfo</title>
@@ -22,7 +22,6 @@
       PokéInfo
     </a>
     <nav id="nav">
-      <a href="#/" data-route="" data-i18n="Home">Home</a>
       <a href="#/pokedex" data-route="pokedex">Pokédex</a>
       <a href="#/regions" data-route="regions" data-i18n="Regions">Regions</a>
       <a href="#/games" data-route="games" data-i18n="Games">Games</a>
@@ -30,6 +29,7 @@
       <a href="#/team" data-route="team" data-i18n="Team">Team</a>
       <a href="#/nuzlocke" data-route="nuzlocke" data-i18n="Nuzlocke">Nuzlocke</a>
       <a href="#/cards" data-route="cards" data-i18n="Cards">Cards</a>
+      <a href="#/news" data-route="news" data-i18n="News">News</a>
       <a href="#/compare" data-route="compare" data-i18n="Compare">Compare</a>
     </nav>
     <button class="theme-btn" id="langBtn" type="button" aria-label="Cambiar a español">ES</button>
@@ -49,6 +49,7 @@
   <script src="js/names.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/cards.js"></script>
+  <script src="js/news.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

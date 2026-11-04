@@ -4,6 +4,7 @@
 //         #/guides  #/guide/:id[/walkthrough|locations|items]
 //         #/team[/:id.move.move,:id,…[/:game]]   #/nuzlocke[/:game]
 //         #/cards[?q=]  #/cards/set/:set  #/card/:card   (trading cards, in js/cards.js)
+//         #/news   (in js/news.js)
 //
 // Text shown to visitors goes through tr() (js/i18n.js) so it can be shown in Spanish.
 
@@ -60,9 +61,10 @@ async function writeStored(url, data) {
 
 const TIMEOUT = 15000; // give up on a request after 15 s instead of showing "Loading…" forever
 
-// The only places the site fetches data from: PokeAPI, and TCGdex for trading cards (js/cards.js).
+// The only places the site fetches data from: PokeAPI, TCGdex for trading cards (js/cards.js) and the news file.
 const TCG = 'https://api.tcgdex.net/v2';
-const ALLOWED_APIS = [API + '/', TCG + '/'];
+// News headlines come from this repo's "news" branch (see js/news.js and .github/workflows/news.yml).
+const ALLOWED_APIS = [API + '/', TCG + '/', 'https://raw.githubusercontent.com/alberto210495/pokemon-web/news/'];
 
 // `pick`, if given, trims a response before it is cached (used for big records like moves).
 // Always call the same URL with the same pick. `maxAge` overrides how long a saved copy is used.
@@ -252,6 +254,8 @@ function home() {
         <div class="cifra"><b>${GAMES.length}</b><span>${tr('Main games')}</span></div>
       </div>
 
+      <section id="homeNews" class="noticias-portada" aria-live="polite"></section>
+
       <div class="secciones">
         ${section('#/pokedex', '📕', 'Pokédex', tr('Stats, types, abilities, moves and evolutions for all {n} Pokémon.', { n: TOTAL }))}
         ${section('#/regions', '🗺️', tr('Regions'), tr('From Kanto to Paldea: inspiration, professors, starters and legendaries.'))}
@@ -259,6 +263,7 @@ function home() {
         ${section('#/guides', '📖', tr('Guides'), tr('Walkthroughs, routes, wild Pokémon locations and key items for each game.'))}
         ${section('#/team', '🛡️', tr('Team builder'), tr('Build a team of six with their moves, and spot its weaknesses and coverage gaps.'))}
         ${section('#/nuzlocke', '💀', tr('Nuzlocke'), tr('Track a Nuzlocke run: one encounter per area, and fainted means gone.'))}
+        ${section('#/news', '📰', tr('News'), tr('Pokémon headlines from around the web, updated every 6 hours.'))}
         ${section('#/cards', '🃏', tr('Cards'), tr('Every card of the trading card game since 1999: sets, attacks, rarities and prices.'))}
         ${section('#/compare', '⚖️', tr('Compare'), tr('Put two games side by side and see how they differ.'))}
       </div>`,
@@ -266,6 +271,7 @@ function home() {
       document.getElementById('randomBtn').onclick = () => {
         location.hash = `#/pokemon/${1 + Math.floor(Math.random() * TOTAL)}`;
       };
+      renderHomeNews();
     },
   };
 }
@@ -1566,7 +1572,7 @@ const ROUTES = {
   regions, region: regionDetail,
   games, game: gameDetail, compare,
   guides, guide: guideView, team, nuzlocke,
-  cards: cardsView, card: cardView,
+  cards: cardsView, card: cardView, news: newsView,
 };
 const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides', card: 'cards' };
 let renderToken = 0;

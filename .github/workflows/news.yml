@@ -1,0 +1,42 @@
+# Collects Pokémon news headlines every 6 hours and publishes them as news.json on the "news" branch.
+# The site reads that file (see js/news.js). Run it by hand from the Actions tab → "Update news" → "Run workflow".
+# The "news" branch holds only news.json and is replaced on every run, so main's history stays clean.
+name: Update news
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'   # 00:17, 06:17, 12:17 and 18:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write            # needed to push the news branch
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Collect headlines
+        run: node tools/fetch-news.js out/news.json
+
+      - name: Publish to the news branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out
+          git init -q -b news
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news.json
+          git commit -q -m "News update $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push -q --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" news

@@ -1,6 +1,6 @@
 # PokéInfo
 
-A fan-made guide to the Pokémon series: every Pokémon, region and main-series game, with per-game walkthroughs, wild Pokémon locations, key items, a team builder, a Nuzlocke tracker and every card of the trading card game. In English and Spanish.
+A fan-made guide to the Pokémon series: every Pokémon, region and main-series game, with per-game walkthroughs, wild Pokémon locations, key items, a team builder, a Nuzlocke tracker, every card of the trading card game and daily Pokémon news. In English and Spanish.
 
 **Live site: https://alberto210495.github.io/pokemon-web/**
 
@@ -18,6 +18,7 @@ It is a plain HTML, CSS and JavaScript site. There is no framework and no build 
 - **Team builder**: pick up to 6 Pokémon and up to 4 moves each (from what they can learn in the chosen game). It shows shared weaknesses, biggest threats, offensive coverage based on the chosen moves, and suggests Pokémon that resist the biggest threats. You can limit it to one game's Pokédex, and export the team in Pokémon Showdown format. Teams are saved in the browser and can be shared by link.
 - **Nuzlocke tracker**: pick a game and record the first encounter in each area (caught, fainted or missed, with a nickname). It lists the wild Pokémon in each area, warns about duplicates, and keeps a party and a graveyard. Runs are saved in the browser, one per game.
 - **Trading cards**: every set of the Pokémon Trading Card Game, from Base Set (1999) to today, grouped by series. Each set lists all its cards with filters for type, kind and name. Each card has its image and everything TCGdex records: HP, types, stage, what it evolves from, abilities, attacks with energy costs and damage, weakness, resistance, retreat cost, Trainer and Energy effects, rarity, illustrator, regulation mark, Standard and Expanded legality, the versions printed (1st Edition, holo, reverse holo…) and Cardmarket and TCGplayer market prices. You can search all cards by name, and every Pokémon page lists that Pokémon's cards.
+- **News**: Pokémon headlines from PokéJungle, Pokémon Blog, Dexerto, Pokémon GO Hub, Nintendo Life, Siliconera and Nintenderos (Spanish), collected every 6 hours, grouped by day and filterable by source. Each headline links to the full article; the four newest also appear on the home page.
 - **English and Spanish**: the site follows the browser's language, and the EN/ES button in the top bar switches it (remembered in the browser). Pokémon, move, ability, type and place names use the official Spanish names. Region, game and guide descriptions are in English only for now.
 - **Light and dark themes**: follows the system setting, or pick one with the button in the top bar (remembered in the browser).
 
@@ -44,10 +45,13 @@ js/theme.js       Applies the saved light/dark theme before the page draws
 js/data.js        Static data: generations, types, type chart, regions, games
 js/guides.js      Hand-written guide data: gyms, Elite Four, key items, gift Pokémon
 js/cards.js       Trading card pages (sets, cards, search), using TCGdex
+js/news.js        News page and the home page's latest headlines
 js/names.js       Official English and Spanish names for moves, abilities, places and types (generated)
 js/i18n.js        Language choice, tr() and the Spanish text of the site
 js/app.js         The app: hash router, API helper with caching, and every page
 tools/build-names.js  Rebuilds js/names.js from PokeAPI
+tools/fetch-news.js   Collects news headlines into news.json (run by the GitHub Action)
+.github/workflows/news.yml  The "Update news" GitHub Action
 ```
 
 Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `#/guide/red-blue/locations`, `#/nuzlocke/emerald`, `#/cards/set/base1`, `#/card/base1-4` or `#/team/6.flamethrower.air-slash,25.thunderbolt/red-blue` (each team member is its Pokédex number followed by its moves). Pokédex filters are kept in the URL too, as in `#/pokedex?gen=3&type=water&q=mud`, so a filtered view can be bookmarked or shared. The full route list is at the top of `js/app.js`.
@@ -62,6 +66,7 @@ Pages are chosen by the part of the URL after `#`, for example `#/pokemon/25`, `
 | Regions, games, version exclusives, type chart | `js/data.js` |
 | Gyms, Elite Four, key items, gift Pokémon | `js/guides.js` |
 | Trading cards, sets and card prices | [TCGdex](https://tcgdex.dev), live (prices cached for a day) |
+| News headlines | The sites' RSS feeds, collected by `tools/fetch-news.js` every 6 hours |
 | Card pictures TCGdex doesn't have | [Pokémon TCG API](https://pokemontcg.io) image server |
 | Spanish and English names of moves, abilities, places, types | `js/names.js`, built from PokeAPI by `tools/build-names.js` |
 
@@ -88,6 +93,15 @@ Milestones (Gyms, Elite Four and so on) are lists of `{ who, type, where, reward
 
 ## Development
 
+### News updates
+
+The "Update news" GitHub Action (`.github/workflows/news.yml`) runs every 6 hours. It runs `tools/fetch-news.js`, which reads each news site's RSS feed, keeps the Pokémon stories from the last 14 days (headline, date, a short summary and the link), and publishes them as `news.json` on the `news` branch. The site reads that file from `raw.githubusercontent.com`, so the news updates without changing `main` or redeploying the site.
+
+- To update it now, open the repo's **Actions** tab → **Update news** → **Run workflow**.
+- To add or remove a news site, edit `SOURCES` in `tools/fetch-news.js`. Sites that cover more than Pokémon need `filter: true`.
+- GitHub pauses scheduled Actions in repos with no activity for 60 days. If the News page says the headlines are old, re-enable the workflow in the Actions tab.
+- If you rename the repo or your account, update `NEWS_URL` in `js/news.js` and the matching line in `ALLOWED_APIS` in `js/app.js`.
+
 ### Translations
 
 All text shown on the site is written in English inside `tr('…')` in `js/app.js`. To add or change text, write the English there and add its Spanish to the `ES` list in `js/i18n.js`. Text without a translation simply shows in English. Placeholders such as `{name}` are filled in by the code. Translations must not contain double quotes (`"`), because some are used inside HTML attributes.
@@ -106,7 +120,7 @@ The site has no server, logins or user data, so the main risk is someone getting
 - **No inline code.** No `<script>` blocks in the HTML and no `onclick="…"` or `onerror="…"` attributes. Attach event handlers from JavaScript instead.
 - **Keep the Content Security Policy up to date.** The `<meta http-equiv="Content-Security-Policy">` tag in `index.html` lists every site the page may load from. If you add a new image host, font or API, add it there or the browser will block it.
 
-`api()` also refuses to fetch anything outside PokeAPI and TCGdex, and lookups that use values from the URL go through `has()`, so names like `constructor` can't match built-in object members.
+`api()` also refuses to fetch anything outside PokeAPI, TCGdex and the news file, and lookups that use values from the URL go through `has()`, so names like `constructor` can't match built-in object members.
 
 ### Linting
 
