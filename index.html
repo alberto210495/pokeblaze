@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <!-- Content Security Policy: the browser may only run this site's own scripts, and only load data from
-       PokeAPI, images and cries from PokeAPI's GitHub, and the Google font. Update it if you add a new source. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com; media-src https://raw.githubusercontent.com; connect-src https://pokeapi.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+       PokeAPI and TCGdex (trading cards), images from PokeAPI's GitHub and TCGdex, and the Google font. Update it if you add a new source. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com https://assets.tcgdex.net; media-src https://raw.githubusercontent.com; connect-src https://pokeapi.co https://api.tcgdex.net; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PokéInfo</title>
@@ -29,6 +29,7 @@
       <a href="#/guides" data-route="guides" data-i18n="Guides">Guides</a>
       <a href="#/team" data-route="team" data-i18n="Team">Team</a>
       <a href="#/nuzlocke" data-route="nuzlocke" data-i18n="Nuzlocke">Nuzlocke</a>
+      <a href="#/cards" data-route="cards" data-i18n="Cards">Cards</a>
       <a href="#/compare" data-route="compare" data-i18n="Compare">Compare</a>
     </nav>
     <button class="theme-btn" id="langBtn" type="button" aria-label="Cambiar a español">ES</button>
@@ -47,6 +48,7 @@
   <script src="js/guides.js"></script>
   <script src="js/names.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/cards.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

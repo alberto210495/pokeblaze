@@ -3,6 +3,7 @@
 //         #/games  #/game/:id  #/compare[/:a/:b]
 //         #/guides  #/guide/:id[/walkthrough|locations|items]
 //         #/team[/:id.move.move,:id,…[/:game]]   #/nuzlocke[/:game]
+//         #/cards[?q=]  #/cards/set/:set  #/card/:card   (trading cards, in js/cards.js)
 //
 // Text shown to visitors goes through tr() (js/i18n.js) so it can be shown in Spanish.
 
@@ -21,19 +22,19 @@ const STORE_NAME = 'pokeinfo-v1';
 const STORE_PREFIX = 'pokeinfo:';
 const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
-async function readStored(url) {
+async function readStored(url, maxAge = MAX_AGE) {
   let store;
   try { store = await caches.open(STORE_NAME); } catch { /* Cache API unavailable (e.g. file://): fall back to localStorage */ }
   if (store) {
     try {
       const res = await store.match(url);
-      if (res && Date.now() - Number(res.headers.get('x-saved')) < MAX_AGE) return await res.json();
+      if (res && Date.now() - Number(res.headers.get('x-saved')) < maxAge) return await res.json();
     } catch { store.delete(url).catch(() => {}); } // damaged entry: drop it and fetch again
     return null;
   }
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_PREFIX + url));
-    return saved && Date.now() - saved.t < MAX_AGE ? saved.d : null;
+    return saved && Date.now() - saved.t < maxAge ? saved.d : null;
   } catch { return null; }
 }
 
@@ -59,15 +60,19 @@ async function writeStored(url, data) {
 
 const TIMEOUT = 15000; // give up on a request after 15 s instead of showing "Loading…" forever
 
+// The only places the site fetches data from: PokeAPI, and TCGdex for trading cards (js/cards.js).
+const TCG = 'https://api.tcgdex.net/v2';
+const ALLOWED_APIS = [API + '/', TCG + '/'];
+
 // `pick`, if given, trims a response before it is cached (used for big records like moves).
-// Always call the same URL with the same pick.
-function api(url, pick) {
+// Always call the same URL with the same pick. `maxAge` overrides how long a saved copy is used.
+function api(url, pick, maxAge = MAX_AGE) {
   const full = url.startsWith('http') ? url : API + url;
-  // Only ever talk to PokeAPI, even if a response contains a link somewhere else.
-  if (!full.startsWith(API + '/')) return Promise.reject(new Error(`Blocked request to ${full}`));
+  // Only ever talk to the allowed APIs, even if a response contains a link somewhere else.
+  if (!ALLOWED_APIS.some(base => full.startsWith(base))) return Promise.reject(new Error(`Blocked request to ${full}`));
   if (!cache.has(full)) {
     const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(TIMEOUT) : undefined;
-    const req = readStored(full)
+    const req = readStored(full, maxAge)
       .then(saved => saved || fetch(full, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
         .then(data => { const kept = pick ? pick(data) : data; writeStored(full, kept); return kept; }))
@@ -254,6 +259,7 @@ function home() {
         ${section('#/guides', '📖', tr('Guides'), tr('Walkthroughs, routes, wild Pokémon locations and key items for each game.'))}
         ${section('#/team', '🛡️', tr('Team builder'), tr('Build a team of six with their moves, and spot its weaknesses and coverage gaps.'))}
         ${section('#/nuzlocke', '💀', tr('Nuzlocke'), tr('Track a Nuzlocke run: one encounter per area, and fainted means gone.'))}
+        ${section('#/cards', '🃏', tr('Cards'), tr('Every card of the trading card game since 1999: sets, attacks, rarities and prices.'))}
         ${section('#/compare', '⚖️', tr('Compare'), tr('Put two games side by side and see how they differ.'))}
       </div>`,
     mount() {
@@ -485,6 +491,12 @@ async function pokemonDetail(param) {
         <div class="cuerpo-lugar" id="moves"></div>
       </details>
 
+      <h2>${tr('Trading cards')}</h2>
+      <details class="tarjeta desplegable" id="cardsBox">
+        <summary>${tr('Show the cards of {name}', { name })} <small>${tr('every set since 1999')}</small></summary>
+        <div class="cuerpo-lugar" id="pokeCards"></div>
+      </details>
+
       <div class="navpoke">
         ${id > 1 ? `<a class="btn sec" href="#/pokemon/${id - 1}">← ${pad(id - 1)} ${nameOf(id - 1)}</a>` : '<span></span>'}
         ${id < TOTAL ? `<a class="btn sec" href="#/pokemon/${id + 1}">${nameOf(id + 1)} ${pad(id + 1)} →</a>` : ''}
@@ -514,6 +526,10 @@ async function pokemonDetail(param) {
       const movesBox = document.getElementById('movesBox');
       movesBox.addEventListener('toggle', () => {
         if (movesBox.open && !movesBox.dataset.loaded) { movesBox.dataset.loaded = '1'; renderMoves(p); }
+      });
+      const cardsBox = document.getElementById('cardsBox');
+      cardsBox.addEventListener('toggle', () => {
+        if (cardsBox.open && !cardsBox.dataset.loaded) { cardsBox.dataset.loaded = '1'; renderPokemonCards(id, cardsBox); }
       });
     },
   };
@@ -1550,8 +1566,9 @@ const ROUTES = {
   regions, region: regionDetail,
   games, game: gameDetail, compare,
   guides, guide: guideView, team, nuzlocke,
+  cards: cardsView, card: cardView,
 };
-const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides' };
+const NAV_SECTION = { pokemon: 'pokedex', region: 'regions', game: 'games', guide: 'guides', card: 'cards' };
 let renderToken = 0;
 let lastRoute = null;
 

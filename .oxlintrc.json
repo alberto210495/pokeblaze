@@ -1,7 +1,7 @@
 {
   "overrides": [
     {
-      "files": ["js/data.js", "js/guides.js", "js/names.js", "js/i18n.js"],
+      "files": ["js/data.js", "js/guides.js", "js/names.js", "js/i18n.js", "js/cards.js"],
       "rules": {
         "no-unused-vars": "off"
       }
