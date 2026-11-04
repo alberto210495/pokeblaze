@@ -1,0 +1,345 @@
+// Language support. English is the source text: tr('English text') returns the Spanish version when Spanish
+// is on, or the English text if there is no translation yet. {name} placeholders are filled from `vars`.
+//
+// Adding text to the site: write it in English inside tr('…') in app.js, then add the Spanish below.
+// Translations must not contain double quotes ("), because some are used inside HTML attributes.
+
+const LANG_KEY = 'pokeinfo-lang';
+
+// A saved choice wins; otherwise follow the browser's main language.
+function detectLang() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === 'en' || saved === 'es') return saved;
+  } catch { /* storage blocked */ }
+  const first = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+  return /^es\b/i.test(first) ? 'es' : 'en';
+}
+
+let LANG = detectLang();
+
+function setLang(lang) {
+  LANG = lang === 'es' ? 'es' : 'en';
+  try { localStorage.setItem(LANG_KEY, LANG); } catch { /* choice just won't be remembered */ }
+}
+
+function tr(en, vars) {
+  let s = LANG === 'es' && Object.prototype.hasOwnProperty.call(ES, en) ? ES[en] : en;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (Object.prototype.hasOwnProperty.call(vars, k) ? String(vars[k]) : m));
+  return s;
+}
+
+// Short stat labels (PokeAPI's own Spanish names are long, e.g. "Ataque Especial").
+const STAT_NAMES_ES = {
+  hp: 'PS', attack: 'Ataque', defense: 'Defensa',
+  'special-attack': 'At. Esp.', 'special-defense': 'Def. Esp.', speed: 'Velocidad',
+};
+
+// PokeAPI has no Spanish names for encounter methods and conditions.
+const METHODS_ES = {
+  walk: 'Caminando', surf: 'Surf', 'old-rod': 'Caña Vieja', 'good-rod': 'Caña Buena', 'super-rod': 'Supercaña',
+  'rock-smash': 'Golpe Roca', headbutt: 'Golpe Cabeza', gift: 'Regalo', 'gift-egg': 'Huevo de regalo',
+  'only-one': 'Encuentro único', 'dark-grass': 'Hierba oscura', 'grass-spots': 'Hierba que se mueve',
+  'cave-spots': 'Polvo en cuevas', 'bridge-spots': 'Sombras en puentes', 'super-rod-spots': 'Supercaña en ondas',
+  'surf-spots': 'Surf en ondas', 'yellow-flowers': 'Flores amarillas', 'purple-flowers': 'Flores moradas',
+  'red-flowers': 'Flores rojas', 'rough-terrain': 'Terreno escabroso', pokeflute: 'Poké Flauta',
+  'squirt-bottle': 'Regadera', 'devon-scope': 'Detector Devon', 'island-scan': 'Escáner Isla',
+  'sos-encounter': 'Combate SOS', 'roaming-grass': 'Errante (hierba)', 'roaming-water': 'Errante (agua)',
+};
+const CONDITIONS_ES = {
+  'time-morning': 'Mañana', 'time-day': 'Día', 'time-night': 'Noche',
+  'swarm-yes': 'Durante un enjambre', 'swarm-no': 'Sin enjambre', 'radar-on': 'Con Pokéradar', 'radar-off': 'Sin Pokéradar',
+  'season-spring': 'Primavera', 'season-summer': 'Verano', 'season-autumn': 'Otoño', 'season-winter': 'Invierno',
+  'radio-hoenn': 'Radio: sonido Hoenn', 'radio-sinnoh': 'Radio: sonido Sinnoh', 'radio-off': 'Radio apagada',
+  'slot2-none': 'Sin cartucho de GBA', 'slot2-ruby': 'Con Rubí en la ranura de GBA', 'slot2-sapphire': 'Con Zafiro en la ranura de GBA',
+  'slot2-emerald': 'Con Esmeralda en la ranura de GBA', 'slot2-firered': 'Con Rojo Fuego en la ranura de GBA',
+  'slot2-leafgreen': 'Con Verde Hoja en la ranura de GBA',
+};
+
+const ES = {
+  // Menu, footer and buttons in index.html
+  'Home': 'Inicio',
+  'Regions': 'Regiones',
+  'Games': 'Juegos',
+  'Guides': 'Guías',
+  'Team': 'Equipo',
+  'Nuzlocke': 'Nuzlocke',
+  'Compare': 'Comparar',
+  'Menu': 'Menú',
+  'Pokémon data provided by': 'Datos Pokémon proporcionados por',
+  'Pokémon and Pokémon character names are trademarks of Nintendo, Game Freak and The Pokémon Company. Non-commercial fan site.':
+    'Pokémon y los nombres de sus personajes son marcas registradas de Nintendo, Game Freak y The Pokémon Company. Web de fans sin ánimo de lucro.',
+  'Switch to light theme': 'Cambiar al tema claro',
+  'Switch to dark theme': 'Cambiar al tema oscuro',
+
+  // General
+  'Loading…': 'Cargando…',
+  'Generation {n}': 'Generación {n}',
+  'Generation': 'Generación',
+  'Generations': 'Generaciones',
+  'Gen {n}': 'Gen. {n}',
+  'Type': 'Tipo',
+  'Clear': 'Borrar',
+  'Game': 'Juego',
+  'Region': 'Región',
+  'Routes': 'Rutas',
+  'Towns, caves & other places': 'Pueblos, cuevas y otros lugares',
+  'Filter locations: Route 3, Mt. Moon…': 'Filtrar lugares: Ruta 3, Mt. Moon…',
+  'Filter locations': 'Filtrar lugares',
+  'PokeAPI has no location list for this region.': 'PokeAPI no tiene una lista de lugares para esta región.',
+  'No Pokémon with that name or number.': 'No hay ningún Pokémon con ese nombre o número.',
+  'Unknown': 'Desconocido',
+  'Save': 'Guardar',
+  'Copy': 'Copiar',
+  'Copied': 'Copiado',
+  'Add': 'Añadir',
+  'Retry': 'Reintentar',
+  'Page not found': 'Página no encontrada',
+  "That page doesn't exist.": 'Esa página no existe.',
+  'Go home': 'Volver al inicio',
+  'Something went wrong': 'Algo ha fallado',
+  'Could not load the data. Check your internet connection and try again.': 'No se han podido cargar los datos. Comprueba tu conexión a internet e inténtalo de nuevo.',
+
+  // Game types (data.js) and guide section titles (guides.js)
+  'Original': 'Original',
+  'Remake': 'Remake',
+  'Sequel': 'Secuela',
+  'Special edition': 'Edición especial',
+  'Legends': 'Leyendas',
+  'Gyms': 'Gimnasios',
+  'Elite Four': 'Alto Mando',
+  'Champion Cup': 'Copa de Campeones',
+  'Final battle': 'Combate final',
+  'Island Trials': 'Pruebas de las islas',
+  'Grand Trials (Kahunas)': 'Grandes pruebas (kahunas)',
+  'Johto Gyms': 'Gimnasios de Johto',
+  'Kanto Gyms (post-game)': 'Gimnasios de Kanto (tras la historia)',
+  'Noble Pokémon': 'Pokémon señoriales',
+  'Path of Legends (Titans)': 'Senda de las Leyendas (titanes)',
+  'Victory Road (Gyms)': 'Camino Victoria (gimnasios)',
+  'Starfall Street (Team Star bosses)': 'Operación Estrella (jefes del Team Star)',
+  'Rogue Mega Evolutions': 'Megaevoluciones descontroladas',
+  'Z-A Royale ranks': 'Rangos del Z-A Royale',
+
+  // Home
+  'Welcome to PokéInfo': 'Bienvenido a PokéInfo',
+  'Your guide to the Pokémon world: details on every Pokémon, every region and every main-series game, plus what makes each version different.':
+    'Tu guía del mundo Pokémon: todos los Pokémon, todas las regiones y todos los juegos principales, y lo que hace diferente a cada versión.',
+  'Explore the Pokédex': 'Explorar la Pokédex',
+  'Random Pokémon': 'Pokémon al azar',
+  'Featured Pokémon': 'Pokémon destacado',
+  'Main games': 'Juegos principales',
+  'Stats, types, abilities, moves and evolutions for all {n} Pokémon.': 'Estadísticas, tipos, habilidades, movimientos y evoluciones de los {n} Pokémon.',
+  'From Kanto to Paldea: inspiration, professors, starters and legendaries.': 'De Kanto a Paldea: inspiración, profesores, iniciales y legendarios.',
+  'Every main-series game, its new features and version exclusives.': 'Todos los juegos principales, sus novedades y sus exclusivos de versión.',
+  'Walkthroughs, routes, wild Pokémon locations and key items for each game.': 'Guías, rutas, dónde encontrar Pokémon salvajes y objetos clave de cada juego.',
+  'Team builder': 'Creador de equipos',
+  'Build a team of six with their moves, and spot its weaknesses and coverage gaps.': 'Crea un equipo de seis con sus movimientos y descubre sus debilidades y huecos de cobertura.',
+  'Track a Nuzlocke run: one encounter per area, and fainted means gone.': 'Sigue tu reto Nuzlocke: un encuentro por zona, y si se debilita, se pierde.',
+  'Put two games side by side and see how they differ.': 'Pon dos juegos lado a lado y mira en qué se diferencian.',
+
+  // Pokédex
+  'Search by name or number, or filter by generation and type.': 'Busca por nombre o número, o filtra por generación y tipo.',
+  'Search: Pikachu, 25…': 'Buscar: Pikachu, 25…',
+  'Search by name or number': 'Buscar por nombre o número',
+  'All generations': 'Todas las generaciones',
+  'All types': 'Todos los tipos',
+  'Filtering by type…': 'Filtrando por tipo…',
+  '{n} Pokémon': '{n} Pokémon',
+  'Could not load the type filter. Check your connection and try again.': 'No se ha podido cargar el filtro de tipo. Comprueba tu conexión e inténtalo de nuevo.',
+  'No Pokémon match your search.': 'Ningún Pokémon coincide con tu búsqueda.',
+
+  // Pokémon page
+  'Legendary': 'Legendario',
+  'Mythical': 'Singular',
+  'Baby': 'Bebé',
+  'Back to Pokédex': 'Volver a la Pokédex',
+  'View shiny': 'Ver variocolor',
+  'View normal': 'Ver normal',
+  'Cry': 'Grito',
+  'Cry unavailable': 'Grito no disponible',
+  'Add to team': 'Añadir al equipo',
+  'Your team is full. Remove a Pokémon first.': 'Tu equipo está completo. Quita primero un Pokémon.',
+  'Height': 'Altura',
+  'Weight': 'Peso',
+  'Catch rate': 'Ratio de captura',
+  'Egg groups': 'Grupos huevo',
+  'Abilities': 'Habilidades',
+  'hidden': 'oculta',
+  'Base stats': 'Estadísticas base',
+  'total {n}': 'total {n}',
+  'Type effectiveness': 'Eficacia de tipos',
+  'Takes ×4 from': 'Recibe ×4 de',
+  'Takes ×2 from': 'Recibe ×2 de',
+  'Takes ×½ from': 'Recibe ×½ de',
+  'Takes ×¼ from': 'Recibe ×¼ de',
+  'Immune to': 'Inmune a',
+  'Based on type only; abilities like Levitate or Flash Fire can change this.': 'Solo según el tipo; habilidades como Levitación o Absorbe Fuego pueden cambiarlo.',
+  'Evolution chain': 'Cadena evolutiva',
+  'Version exclusive in': 'Exclusivo de versión en',
+  'Where to find': 'Dónde encontrarlo',
+  'Loading locations…': 'Cargando lugares…',
+  'Could not load location data.': 'No se han podido cargar los lugares.',
+  'Lv.': 'Nv.',
+  'Gift': 'Regalo',
+  '{n} location': '{n} lugar',
+  '{n} locations': '{n} lugares',
+  'Open the {game} guide': 'Abrir la guía de {game}',
+  'No wild encounters recorded. It may only be obtainable by evolving, breeding, trading or events.':
+    'No hay encuentros salvajes registrados. Puede que solo se consiga evolucionando, criando, intercambiando o en eventos.',
+
+  // Moves
+  'Moves': 'Movimientos',
+  'Show the moves {name} can learn': 'Ver los movimientos que puede aprender {name}',
+  'by game: level-up, TM/HM, egg and tutor': 'por juego: por nivel, MT/MO, huevo y tutor',
+  'PokeAPI has no move data for this Pokémon.': 'PokeAPI no tiene datos de movimientos de este Pokémon.',
+  'How the move is learned': 'Cómo se aprende el movimiento',
+  'Level-up': 'Por nivel',
+  'TM / HM': 'MT / MO',
+  'Egg moves': 'Movimientos huevo',
+  'Tutor': 'Tutor',
+  'No moves learned this way in this game.': 'No aprende movimientos de esta forma en este juego.',
+  'Loading {n} moves…': 'Cargando {n} movimientos…',
+  'Loading moves… {done}/{n}': 'Cargando movimientos… {done}/{n}',
+  'Move': 'Movimiento',
+  'Category': 'Categoría',
+  'Physical': 'Físico',
+  'Special': 'Especial',
+  'Status': 'Estado',
+  'Power': 'Potencia',
+  'Acc.': 'Prec.',
+  'PP': 'PP',
+  'Evo': 'Evo',
+  'Evo: learned when it evolves into this Pokémon.': 'Evo: lo aprende al evolucionar a este Pokémon.',
+  "Details for {n} moves couldn't be loaded. Close and reopen Moves to retry.": 'No se han podido cargar los datos de {n} movimientos. Cierra y vuelve a abrir Movimientos para reintentarlo.',
+  'Power, accuracy and type are shown as they were in this game. "—" means it has no fixed value.': 'La potencia, la precisión y el tipo se muestran como eran en este juego. «—» significa que no tiene un valor fijo.',
+
+  // Regions and games
+  'Each generation introduces a new region, inspired by a real-world place.': 'Cada generación presenta una región nueva, inspirada en un lugar real.',
+  'Based on {place}': 'Basada en {place}',
+  'All regions': 'Todas las regiones',
+  'Starter Pokémon': 'Pokémon iniciales',
+  'Legendary & Mythical Pokémon': 'Pokémon legendarios y singulares',
+  'Games set in {region}': 'Juegos ambientados en {region}',
+  'View the {n} Pokémon introduced in Gen {gen}': 'Ver los {n} Pokémon que llegaron en la Gen. {gen}',
+  'All main-series games in release order. Click one to see its features and version differences.': 'Todos los juegos principales por orden de salida. Pulsa uno para ver sus novedades y las diferencias entre versiones.',
+  'All games': 'Todos los juegos',
+  'Open game guide': 'Abrir la guía del juego',
+  'Nuzlocke tracker': 'Registro Nuzlocke',
+  'Key mechanic:': 'Mecánica clave:',
+  'Key mechanic': 'Mecánica clave',
+  "What's new": 'Novedades',
+  'Differences': 'Diferencias',
+  'Version exclusives': 'Exclusivos de versión',
+  'Single edition': 'Edición única',
+  'This game has only one version, so there are no version exclusives.': 'Este juego tiene una sola versión, así que no hay exclusivos de versión.',
+  'Other games in {region}': 'Otros juegos en {region}',
+  'Compare with {game}': 'Comparar con {game}',
+  'Compare games': 'Comparar juegos',
+  'Pick two games to see them side by side. Highlighted rows are different.': 'Elige dos juegos para verlos lado a lado. Las filas resaltadas son diferentes.',
+  'First game': 'Primer juego',
+  'Second game': 'Segundo juego',
+  'Year': 'Año',
+  'Platform': 'Plataforma',
+  'Versions': 'Versiones',
+  'Cover Pokémon': 'Pokémon de portada',
+
+  // Guides
+  'Game guides': 'Guías de los juegos',
+  'Walkthroughs, routes, wild Pokémon locations, key items and gift Pokémon for each game.': 'Guías, rutas, Pokémon salvajes, objetos clave y Pokémon de regalo de cada juego.',
+  'Pokémon {game} guide': 'Guía de Pokémon {game}',
+  'Walkthrough': 'Guía paso a paso',
+  'Routes & wild Pokémon': 'Rutas y Pokémon salvajes',
+  'Items & gifts': 'Objetos y regalos',
+  'No walkthrough data for this game yet.': 'Todavía no hay guía para este juego.',
+  'Item': 'Objeto',
+  'Where to get it': 'Dónde conseguirlo',
+  'No key-item list for this game yet.': 'Todavía no hay lista de objetos clave para este juego.',
+  'No gift Pokémon listed for this game yet.': 'Todavía no hay Pokémon de regalo para este juego.',
+  'Key items & HMs': 'Objetos clave y MO',
+  'Gift Pokémon': 'Pokémon de regalo',
+  'Open a location to see which wild Pokémon appear there in this game, how to find them and at what level. Encounter data comes from PokeAPI; newer games may have little or none.':
+    'Abre un lugar para ver qué Pokémon salvajes aparecen en este juego, cómo encontrarlos y a qué nivel. Los datos vienen de PokeAPI; puede que los juegos más nuevos tengan pocos o ninguno.',
+  'Could not load this location. Close and reopen it to retry.': 'No se ha podido cargar este lugar. Ciérralo y vuelve a abrirlo para reintentarlo.',
+  'Method': 'Método',
+  'Levels': 'Niveles',
+  'Rate': 'Probabilidad',
+  'No wild Pokémon recorded here for this game.': 'No hay Pokémon salvajes registrados aquí en este juego.',
+  '{version} only': 'Solo en {version}',
+
+  // Team builder
+  'Build a team of up to {n} Pokémon, pick their moves and check its weaknesses. Your team is saved in this browser, and you can share the page link.':
+    'Crea un equipo de hasta {n} Pokémon, elige sus movimientos y revisa sus debilidades. Tu equipo se guarda en este navegador y puedes compartir el enlace de la página.',
+  'Any game (all Pokémon)': 'Cualquier juego (todos los Pokémon)',
+  'Suggestions are limited to the {n} Pokémon in the {game} regional Pokédex. Some games let you catch more after the story.':
+    'Las sugerencias se limitan a los {n} Pokémon de la Pokédex regional de {game}. Algunos juegos permiten capturar más tras la historia.',
+  "Couldn't load the {game} Pokédex, so all Pokémon are suggested.": 'No se ha podido cargar la Pokédex de {game}, así que se sugieren todos los Pokémon.',
+  'Add a Pokémon by name or number': 'Añadir un Pokémon por nombre o número',
+  'Team is full': 'El equipo está completo',
+  'Add a Pokémon: name or number…': 'Añade un Pokémon: nombre o número…',
+  'Random team': 'Equipo al azar',
+  'Empty slot': 'Hueco libre',
+  'Remove {name}': 'Quitar a {name}',
+  'Not in {game}': 'No está en {game}',
+  'No move data': 'Sin datos de movimientos',
+  'not in this game': 'no está en este juego',
+  'Move {k} for {name}': 'Movimiento {k} de {name}',
+  '— move {k} —': '— movimiento {k} —',
+  "{name} isn't in the {game} regional Pokédex.": '{name} no está en la Pokédex regional de {game}.',
+  '{name} is already on your team.': '{name} ya está en tu equipo.',
+  "Add Pokémon to see your team's weaknesses and type coverage.": 'Añade Pokémon para ver las debilidades y la cobertura de tipos de tu equipo.',
+  'Biggest threats': 'Mayores amenazas',
+  '{weak} weak · {resist} resist': '{weak} débiles · {resist} resisten',
+  'No type hits more than one of your Pokémon without being resisted. Nice balance!': 'Ningún tipo golpea a más de uno de tus Pokémon sin que otro lo resista. ¡Buen equilibrio!',
+  'Offensive coverage': 'Cobertura ofensiva',
+  'Types your chosen attacking moves hit super-effectively.': 'Tipos a los que tus movimientos de ataque elegidos hacen daño supereficaz.',
+  "Uses chosen attacking moves where set, otherwise the Pokémon's own types.": 'Usa los movimientos de ataque elegidos cuando los hay y, si no, los tipos del propio Pokémon.',
+  "Types your team's own types hit super-effectively. Pick moves to use their real coverage.": 'Tipos a los que los tipos de tu equipo hacen daño supereficaz. Elige movimientos para usar su cobertura real.',
+  'Not covered:': 'Sin cubrir:',
+  'Every type is covered!': '¡Todos los tipos están cubiertos!',
+  'Pokémon that would help': 'Pokémon que te ayudarían',
+  'Each has a type that resists one or more of your biggest threats. Click to add it.': 'Cada uno tiene un tipo que resiste una o más de tus mayores amenazas. Pulsa para añadirlo.',
+  'resists {types}': 'resiste {types}',
+  'Weakness chart': 'Tabla de debilidades',
+  'Damage each attacking type deals to each team member.': 'Daño que hace cada tipo de ataque a cada miembro del equipo.',
+  'Uses the modern type chart; a few matchups were different in older games.': 'Usa la tabla de tipos actual; algunas relaciones eran distintas en los juegos antiguos.',
+  'Attack': 'Ataque',
+  'Weak': 'Débiles',
+  'Resist': 'Resisten',
+  'Export': 'Exportar',
+  'Paste this into Pokémon Showdown (Teambuilder → Import from text). Names are in English, as Showdown expects.':
+    'Pega esto en Pokémon Showdown (Teambuilder → Import from text). Los nombres van en inglés, como pide Showdown.',
+  'Team in Pokémon Showdown format': 'Equipo en formato de Pokémon Showdown',
+
+  // Nuzlocke
+  'A Nuzlocke is a self-imposed challenge: you may only catch the first Pokémon you meet in each area, and any Pokémon that faints is considered dead. Pick a game to track your run. Runs are saved in this browser.':
+    'Un Nuzlocke es un reto autoimpuesto: solo puedes capturar el primer Pokémon que encuentres en cada zona, y cualquier Pokémon que se debilite se considera perdido. Elige un juego para seguir tu partida. Las partidas se guardan en este navegador.',
+  '{n} encounter': '{n} encuentro',
+  '{n} encounters': '{n} encuentros',
+  'All Nuzlocke runs': 'Todas las partidas Nuzlocke',
+  'Nuzlocke: Pokémon {game}': 'Nuzlocke: Pokémon {game}',
+  'Open an area to record its first encounter. Fainted Pokémon move to the graveyard. This run is saved in this browser.':
+    'Abre una zona para anotar su primer encuentro. Los Pokémon debilitados pasan al cementerio. Esta partida se guarda en este navegador.',
+  'See the wild Pokémon in the guide': 'Ver los Pokémon salvajes en la guía',
+  'Reset this run': 'Reiniciar esta partida',
+  "Delete this run's encounters? This can't be undone.": '¿Borrar los encuentros de esta partida? No se puede deshacer.',
+  'Pokémon': 'Pokémon',
+  'Pokémon encountered': 'Pokémon encontrado',
+  'Nickname': 'Mote',
+  'Result': 'Resultado',
+  'Caught': 'Capturado',
+  'Fainted': 'Debilitado',
+  'Missed': 'Fallado',
+  'Loading wild Pokémon…': 'Cargando Pokémon salvajes…',
+  'Already encountered at {place}. Many players skip duplicates (the dupes clause).': 'Ya lo encontraste en {place}. Muchos jugadores se saltan los repetidos (la cláusula de duplicados).',
+  'Wild Pokémon here (click to choose):': 'Pokémon salvajes aquí (pulsa para elegir):',
+  'PokeAPI has no wild Pokémon listed here for this game. Gifts, trades and static encounters still count.': 'PokeAPI no tiene Pokémon salvajes aquí para este juego. Los regalos, intercambios y encuentros fijos también cuentan.',
+  "Couldn't load the wild Pokémon for this area.": 'No se han podido cargar los Pokémon salvajes de esta zona.',
+  'No encounter yet': 'Sin encuentro todavía',
+  'Areas recorded': 'Zonas anotadas',
+  'Alive': 'Vivos',
+  'Graveyard': 'Cementerio',
+  'In the graveyard': 'En el cementerio',
+  'Missed encounters': 'Encuentros fallados',
+  'Mark as fainted': 'Marcar como debilitado',
+};
