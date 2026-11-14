@@ -1,0 +1,576 @@
+{
+ "updated": "2026-11-14T18:09:42.248Z",
+ "sources": [
+  {
+   "id": "pokejungle",
+   "name": "PokéJungle",
+   "site": "https://pokejungle.net",
+   "lang": "en",
+   "ok": true
+  },
+  {
+   "id": "pokemonblog",
+   "name": "Pokémon Blog",
+   "site": "https://pokemonblog.com",
+   "lang": "en",
+   "ok": true
+  },
+  {
+   "id": "dexerto",
+   "name": "Dexerto",
+   "site": "https://www.dexerto.com/pokemon/",
+   "lang": "en",
+   "ok": true
+  },
+  {
+   "id": "gohub",
+   "name": "Pokémon GO Hub",
+   "site": "https://pokemongohub.net",
+   "lang": "en",
+   "ok": true
+  },
+  {
+   "id": "nintendolife",
+   "name": "Nintendo Life",
+   "site": "https://www.nintendolife.com",
+   "lang": "en",
+   "ok": true
+  },
+  {
+   "id": "siliconera",
+   "name": "Siliconera",
+   "site": "https://www.siliconera.com",
+   "lang": "en",
+   "ok": true
+  },
+  {
+   "id": "nintenderos",
+   "name": "Nintenderos",
+   "site": "https://www.nintenderos.com",
+   "lang": "es",
+   "ok": true
+  }
+ ],
+ "items": [
+  {
+   "title": "Pokemon fans furious after lost PokePark DS game found after 20 years is sealed in PSA slab",
+   "link": "https://www.dexerto.com/pokemon/pokemon-fans-furious-after-lost-pokepark-ds-game-found-after-20-years-is-sealed-in-psa-slab-3428188/",
+   "date": "2026-11-14T15:06:26.000Z",
+   "summary": "Pokemon fans are furious after a playable copy of the 20-year-old lost PokePark DS game was sealed in a PSA slab instead of shared online.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon: Códigos activos y a punto de caducar en todos sus juegos (noviembre 2026)",
+   "link": "https://www.nintenderos.com/2026/11/pokemon-codigos-activos-y-a-punto-de-caducar-en-todos-sus-juegos-agosto-2026/",
+   "date": "2026-11-14T11:39:03.000Z",
+   "summary": "Si buscas los mejores regalos promocionales de la franquicia, aquí tienes la lista actualizada con todos los códigos Pokémon activos y las investigaciones especiales que están disponibles este mes de noviembre. Gracias a estas…",
+   "source": "nintenderos",
+   "lang": "es"
+  },
+  {
+   "title": "GO Pass Dynamax Trails",
+   "link": "https://pokemongohub.net/post/guide/go-pass-dynamax-trails/",
+   "date": "2026-11-14T07:26:03.000Z",
+   "summary": "GO Pass: Dynamax Trails is a special GO Pass available during the Dynamax Trails: Eternatus Returns event, but released as early access during the Pokémon GO Wild Area 2026: Global event. It features encounters with Dynamax Pokémon, the…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Best Wild Pokémon to Catch at GO Wild Area 2026: Global",
+   "link": "https://pokemongohub.net/post/meta/go-wild-area-2026-global-wild-spawns-pve-tier-list/",
+   "date": "2026-11-14T06:00:35.000Z",
+   "summary": "Greetings Trainers! Global GO Wild Area 2026 is taking place this weekend and this time the spotlight is on and themed encounters. This event provides ample opportunity for Trainers to collect useful resources for strong Raid attackers…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "GO Wild Area 2026: Global",
+   "link": "https://pokemongohub.net/post/event/wild-area-2026-global/",
+   "date": "2026-11-14T05:00:00.000Z",
+   "summary": "GO Wild Area 2026: Global takes place on November 14 and 15, 2026, from 10:00 a.m. to 6:00 p.m. local time, bringing a weekend of Steel- and Dragon-type Pokémon to Trainers around the world. Gigantamax Duraludon arrives in six-star Max…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon TCG Mega Greninja ex League Battle Deck launches with Mega Starmie ex",
+   "link": "https://pokemonblog.com/2026/11/13/pokemon-tcg-mega-greninja-ex-league-battle-deck-launches-with-mega-starmie-ex/",
+   "date": "2026-11-14T03:57:57.000Z",
+   "summary": "The Pokémon TCG: Mega Greninja ex League Battle Deck launched Nov. 13, 2026, with a ready-to-play 60-card deck built around Mega Greninja ex and Mega Starmie ex. Mega Greninja ex’s Mortal Shuriken Ability can work with Mega Starmie ex’s…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Center’s 2026 holiday gift guide features 30 Pokémon gift ideas",
+   "link": "https://pokemonblog.com/2026/11/13/pokemon-centers-2026-holiday-gift-guide-features-30-pokemon-gift-ideas/",
+   "date": "2026-11-14T03:54:38.000Z",
+   "summary": "The Pokémon Center has published its 2026 holiday gift guide, featuring 30 gift ideas as Pokémon celebrates its 30th anniversary. The picks span LEGO Pokémon sets, puzzles, Squishmallows and other plush, sleepwear, apparel, pet…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Champions Monthly Challenge Series November 2026 registration is open",
+   "link": "https://pokemonblog.com/2026/11/13/pokemon-champions-monthly-challenge-series-november-2026-registration-is-open/",
+   "date": "2026-11-14T03:53:25.000Z",
+   "summary": "Registration is open for the Pokémon Champions Monthly Challenge Series November 2026, with Single Battles under Regulation Set M-C running Nov. 19 at 6 p.m. PST through Nov. 22 at 5:59 p.m. PST. Players can enter through Battle > Online…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon UNITE players must update game to claim refunds for unused paid gems",
+   "link": "https://pokemonblog.com/2026/11/13/pokemon-unite-players-must-update-game-to-claim-refunds-for-unused-paid-gems/",
+   "date": "2026-11-14T03:52:01.000Z",
+   "summary": "Pokémon UNITE players seeking refunds for unused paid gems must update the game before service ends March 23, 2027, according to guidance updated Nov. 12. The mobile version must be updated to version 1.25.1.2 or later, while the Nintendo…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "New POKÉTOON short tells a summer story of friendship between a boy and Wartortle",
+   "link": "https://pokemonblog.com/2026/11/13/new-poketoon-short-tells-a-summer-story-of-friendship-between-a-boy-and-wartortle/",
+   "date": "2026-11-14T03:49:57.000Z",
+   "summary": "The latest POKÉTOON short follows Rikuto as he visits his grandmother on an island and befriends a Wartortle with an algae-covered shell and an unusually colored tail. As they play with the island’s wild Pokémon, Rikuto discovers the…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Mighty Kommo-o returns to Pokémon Scarlet and Violet in 7-star Tera Raids",
+   "link": "https://pokemonblog.com/2026/11/13/mighty-kommo-o-returns-to-pokemon-scarlet-and-violet-in-7-star-tera-raids/",
+   "date": "2026-11-14T03:48:39.000Z",
+   "summary": "Kommo-o with the Mightiest Mark is appearing in 7-star black crystal Tera Raid Battles in Pokémon Scarlet and Violet from Nov. 13 at 12 a.m. UTC through Nov. 19 at 11:59 p.m. UTC. The powerful Pokémon has a Fighting Tera Type, and players…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon TV shares “The Ballad of Slowpoke and the King’s Rock” from Pokémon: Master Quest",
+   "link": "https://pokemonblog.com/2026/11/13/pokemon-tv-shares-the-ballad-of-slowpoke-and-the-kings-rock-from-pokemon-master-quest/",
+   "date": "2026-11-14T03:46:41.000Z",
+   "summary": "Pokémon TV has posted “The Ballad of Slowpoke and the King’s Rock,” an episode from Season 5 of Pokémon: Master Quest. The Nov. 13 video teases Slowpoke placing something on its head and hints at the consequences, with Pikachu also…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Sleep’s Good Sleep Day No. 41 features Mew and full-moon bonuses",
+   "link": "https://pokemonblog.com/2026/11/13/pokemon-sleeps-good-sleep-day-no-41-features-mew-and-full-moon-bonuses/",
+   "date": "2026-11-14T03:44:59.000Z",
+   "summary": "Pokémon Sleep’s 41st Good Sleep Day event runs Nov. 23 at 4 a.m. through Nov. 26 at 3:59 a.m., bringing a special chance to encounter Mew and boosted appearances for Cleffa, Clefairy and Clefable. On Nov. 24, the full-moon event day…",
+   "source": "pokemonblog",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon fan game developer says Claude refused to help after spending thousands on project",
+   "link": "https://www.dexerto.com/pokemon/pokemon-fan-game-developer-says-claude-refused-to-help-after-spending-thousands-on-project-3428122/",
+   "date": "2026-11-13T16:50:43.000Z",
+   "summary": "A Pokemon fan game creator says Claude started refusing to help after they spent up to $2,000 a month and worked 10 to 14 hours daily.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "GO Wild Area 2026 Global: Which Pokémon Are Worth Investing In?",
+   "link": "https://pokemongohub.net/post/meta/go-wild-area-2026-global-pve-analysis-for-raids-eggs-and-max-battles/",
+   "date": "2026-11-13T08:47:50.000Z",
+   "summary": "Greetings Trainers! GO Wild Area 2026 Global is taking place this weekend. The event is bringing with it a nice mix of powerful Pokémon into the spotlight, making it the ideal time take a fresh look at your raid and Max Battle teams…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "How to Beat Dynamax Latios: Best Counters & Guide",
+   "link": "https://pokemongohub.net/post/guide/how-to-beat-dynamax-latios-best-counters-guide/",
+   "date": "2026-11-13T05:00:51.000Z",
+   "summary": "Dynamax Latios is a Tier 5 Max Battle in Pokémon GO. It will cost 800 Max Particles to participate in this Max Battle, which will only be consumed if you defeat Latios successfully. Dynamax Latios can be shiny from Max Battles. Being a and…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "How to Beat Dynamax Latias: Best Counters & Guide",
+   "link": "https://pokemongohub.net/post/guide/how-to-beat-dynamax-latias-best-counters-guide/",
+   "date": "2026-11-13T05:00:37.000Z",
+   "summary": "Dynamax Latias is a Tier 5 Max Battle in Pokémon GO. It will cost 800 Max Particles to participate in this Max Battle, which will only be consumed if you defeat Latias successfully. Dynamax Latias can be shiny from Max Battles. Being a and…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "The Pokémon Company Is Giving Away Free In-Game Pokopia Furniture, And It's Adorable",
+   "link": "https://www.nintendolife.com/news/2026/11/the-pokemon-company-is-giving-away-free-in-game-pokopia-furniture-and-its-adorable",
+   "date": "2026-11-12T18:00:00.000Z",
+   "summary": "Not-so-Mystery Gift. What's that? You wanted more Pokémon Mystery Gift codes? Yes, after already lifting the lid on Champions and Legends: Z-A distributions today, The Pokémon Company has another up its sleeve, but this one is for Pokopia…",
+   "source": "nintendolife",
+   "lang": "en"
+  },
+  {
+   "title": "New furniture Mystery Gifts announced for Pokémon Pokopia",
+   "link": "https://pokejungle.net/2026/11/12/new-furniture-mystery-gifts-announced-for-pokemon-pokopia/",
+   "date": "2026-11-12T15:31:50.000Z",
+   "summary": "In addition to the Shiny Xerneas and Shiny Yveltal Mystery Gifts in Pokémon Legends: Z-A, Pokémon Pokopia is also receiving Mystery Gifts to celebrate the Pokémon franchise’s 30th anniversary! The stylish shiny furniture set is available…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Shiny Xerneas and Shiny Yveltal Mystery Gifts announced for Pokémon Legends: Z-A",
+   "link": "https://pokejungle.net/2026/11/12/shiny-xerneas-and-shiny-yveltal-mystery-gifts-announced-for-pokemon-legends-z-a/",
+   "date": "2026-11-12T14:46:12.000Z",
+   "summary": "To celebrate the 30th anniversary of the Pokémon franchise, a special pair of Mystery Gifts have been announced for Pokémon Legends: Z-A: Shiny Xerneas and Shiny Yveltal! The Shiny Xerneas can be redeemed now through January 7, 2027, and…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Which Adventure Effect Should I Use During Pokémon GO Wild Area: Global 2026?",
+   "link": "https://pokemongohub.net/post/guide/which-adventure-effect-should-i-use-during-pokemon-go-wild-area-global-2026/",
+   "date": "2026-11-12T10:23:19.000Z",
+   "summary": "With the Pokémon GO Wild Area 2026: Global this weekend, one of the many ways you can enhance your experience is through the use of Adventure Effects! Adventure Effects are temporary bonuses in Pokémon GO, activated by powerful Pokémon…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "How to beat Dynamax Regidrago: Complete Guide",
+   "link": "https://pokemongohub.net/post/guide/how-to-beat-dynamax-regidrago-complete-guide/",
+   "date": "2026-11-11T18:42:33.000Z",
+   "summary": "Dynamax Regidrago is a Legendary type Pokémon appearing in Tier 5 Max Battles, costing 800 Max Particles (MP) per successful battle. It is weak to , and -type attacks. Its catch CP ranges from 1614 CP to 1699 CP. Recommended Team Zacian is…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Storage and Item Bag Increased Ahead of Pokémon GO Wild Area Global: 2026",
+   "link": "https://pokemongohub.net/post/news/pokemon-storage-and-item-bag-increased-ahead-of-pokemon-go-wild-area-global-2026/",
+   "date": "2026-11-11T11:21:42.000Z",
+   "summary": "Good news Pokémon hoarders! Ahead of Pokémon GO Wild Area Global: 2026 we have had a storage increase for both the Pokémon storage, and our items bags. The limit on Pokémon and item storage limit capacity have each been expanded by 500…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "What Pokémon Should I Use My Silver Bottle Cap On?",
+   "link": "https://pokemongohub.net/post/article/opinion/what-pokemon-should-i-use-my-silver-bottle-cap-on/",
+   "date": "2026-11-11T10:30:19.000Z",
+   "summary": "With the Into the Wild event in Pokémon GO giving us the option to earn a Silver Bottle Cap via the Deluxe version of the Into the Wild GO Pass, the biggest question remains, what Pokémon do I use it on? First up, let’s cover the basics…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Sleep: Good Sleep Day (November 2026)",
+   "link": "https://pokemongohub.net/post/sleep/pokemon-sleep-good-sleep-day-november-2026/",
+   "date": "2026-11-11T08:20:59.000Z",
+   "summary": "The next Good Sleep Day event has been announced, for November 2026! This is the fortieth Good Sleep Day event, and the eleventh of 2026. There will be bonuses, such as bonus sleep points and increased sleep EXP for Pokémon. Mew may…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "How to Beat Dynamax Registeel: Best Counters & Guide",
+   "link": "https://pokemongohub.net/post/news/how-to-beat-dynamax-registeel-best-counters-guide/",
+   "date": "2026-11-11T05:00:59.000Z",
+   "summary": "Dynamax Registeel is a Tier 5 Max Battle in Pokémon GO. It will cost 800 Max Particles to participate in this Max Battle, which will only be consumed if you defeat Registeel successfully. Dynamax Registeel can be shiny from Max Battles…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Florida woman arrested after targeting ex’s Pokemon cards because he wasn’t giving her attention",
+   "link": "https://www.dexerto.com/pokemon/florida-woman-arrested-after-targeting-exs-pokemon-cards-because-he-wasnt-giving-her-attention-3427169/",
+   "date": "2026-11-10T19:31:41.000Z",
+   "summary": "A Florida woman has been arrested after allegedly targeting her ex-boyfriend’s Pokemon card collection during an argument.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon VGC competitor claims he was wrongfully suspended after another player used his identity at Worlds",
+   "link": "https://www.dexerto.com/pokemon/pokemon-vgc-competitor-claims-he-was-wrongfully-suspended-after-another-player-used-his-identity-at-worlds-3427140/",
+   "date": "2026-11-10T18:31:58.000Z",
+   "summary": "A Pokemon VGC competitor says another player may have used his tournament identity at the 2026 World Championships.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon Go Battle League – Best LAIC 2026 Cup team",
+   "link": "https://www.dexerto.com/pokemon/pokemon-go-battle-league-best-laic-cup-team-3427121/",
+   "date": "2026-11-10T18:24:46.000Z",
+   "summary": "Find the best Pokemon Go LAIC 2026 Cup team, including top PvP picks, ideal movesets, and strategies for the 1,500 CP Go Battle League format.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon collectors fear fake PSA slabs after AliExpress sells custom labels and cases for any card",
+   "link": "https://www.dexerto.com/pokemon/pokemon-collectors-fear-fake-psa-slabs-after-aliexpress-sells-custom-labels-and-cases-for-any-card-3427092/",
+   "date": "2026-11-10T17:07:03.000Z",
+   "summary": "Pokemon TCG collectors are warning that AliExpress sellers now offer customizable PSA-style labels and empty cases for around $4.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Free browser game combines Pokemon with Umamusume-style training and races",
+   "link": "https://www.dexerto.com/gaming/free-browser-game-combines-pokemon-with-umamusume-style-training-and-races-3426914/",
+   "date": "2026-11-10T12:00:26.000Z",
+   "summary": "A free Pokemon fan game has taken the training and racing of Umamusume and applied it to Pokemon, letting Trainers raise their favorite monsters and compete in races across Kanto.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon News This Week: Pokopia Expansion Pass, Fender Guitars Collaboration, Vivillon Challenge and More!",
+   "link": "https://pokemongohub.net/post/news/pokemon-news-this-week-pokopia-expansion-pass-fender-guitars-collaboration-vivillon-challenge-and-more/",
+   "date": "2026-11-10T11:02:31.000Z",
+   "summary": "It has been a quieter week in Pokémon news, but the excitements are still exciting! Dazzling Decorations, part 2 of the Pokopia Expansion Pass will release in December, Spewpa takes the spotlight in Legends: Z-A, and Fender have teamed up…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Silver Bottle Cap Guide",
+   "link": "https://pokemongohub.net/post/guide/silver-bottle-cap/",
+   "date": "2026-11-10T08:37:19.000Z",
+   "summary": "Trainers, Silver Bottle Caps finally arrived in Pokémon GO during the Into the Wild event in November 2025, giving us a way to improve one of a Pokémon’s IV stats through Hyper Training. Unlike a Gold Bottle Cap, which can train multiple…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon GO Web Store: Black Friday Sale PokéCoin Bonus",
+   "link": "https://pokemongohub.net/post/news/pokemon-go-web-store-black-friday-sale-pokecoin-bonus/",
+   "date": "2026-11-10T08:22:09.000Z",
+   "summary": "Black Friday deals are arriving early on the Pokémon GO Web Store ready for the global GO Wild Area this weekend. The sale sees the return of their double bonus PokéCoin sale, as well as a Seasonal Delights Box, and more offers. With a…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Save the Dates for Next Season’s Community Days and Events!",
+   "link": "https://pokemongohub.net/post/news/save-the-dates-for-next-seasons-community-days-and-events-2/",
+   "date": "2026-11-09T19:12:22.000Z",
+   "summary": "Trainers! As we head into the last month of 2026 and look forward to the start of the new Pokémon GO Season as well as 2027, we now have the dates for the Season’s Community Day, along with other special events in December, January, and…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon Winds and Waves reportedly had 2026 launch planned before last-minute delay",
+   "link": "https://www.dexerto.com/pokemon/pokemon-winds-and-waves-reportedly-had-2026-launch-planned-before-last-minute-delay-3426027/",
+   "date": "2026-11-09T11:43:36.000Z",
+   "summary": "The delay has had substantial repercussions on the wider franchise, including the anime series, according to the leaker.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Into the Wild 2026 PvE Guide: What to Build, What to Skip",
+   "link": "https://pokemongohub.net/post/meta/into-the-wild-2026-your-go-to-pve-guide/",
+   "date": "2026-11-09T09:55:31.000Z",
+   "summary": "Hello Trainers! Into the Wild 2026 is here, and it’s a great warm-up for the upcoming GO Wild Area 2026: Global. The event brings plenty of useful PvE options, along with a couple of exciting Dynamax debuts. So, how much does it shake up…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Sleep: Dream Shard Week Vol.3 Event",
+   "link": "https://pokemongohub.net/post/sleep/pokemon-sleep-dream-shard-week-vol-3-event/",
+   "date": "2026-11-09T08:19:35.000Z",
+   "summary": "Dream Shard Week is coming back to Pokémon Sleep! This is a great opportunity to really build up those hard to obtain Dream Shards that you need to level up your Pokémon, and your Cooking Pot. Event Period: Monday November 23rd at 4:00…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "GO Pass: Into the Wild",
+   "link": "https://pokemongohub.net/post/guide/go-pass-into-the-wild/",
+   "date": "2026-11-09T06:36:25.000Z",
+   "summary": "Pokémon GO’s GO Pass: Into the Wild runs from November 9, 2026, to November 15 2025, and features the debut of Dynamax Meltan. This reward track has been released with the Into the Wild (2026) Pokémon GO event and will be available during…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon GO Into the Wild (2026)",
+   "link": "https://pokemongohub.net/post/event/into-the-wild-2026-event/",
+   "date": "2026-11-09T05:00:51.000Z",
+   "summary": "Pokémon GO’s Into the Wild event runs from November 9 at 10:00 a.m. to November 13 at 8:00 p.m. local time, bringing two new Dynamax Pokémon: Dynamax Regidrago and Dynamax Meltan! Expect an increased remote raid limit, GO Pass and GO Pass…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "This Week in Pokémon GO (November 9–15): GO Wild Area Global, Into the Wild and Minior Showers",
+   "link": "https://pokemongohub.net/post/event/this-week-in-pokemon-go-november-9-15-go-wild-area-global-into-the-wild-and-minior-showers/",
+   "date": "2026-11-08T11:23:51.000Z",
+   "summary": "The week of November 9–15, 2026 brings Into the Wild, the Leonid Minior Shower, and GO Wild Area: Global. Crowned Sword Zacian and Crowned Shield Zamazenta lead the weekday raids, followed by a different legendary lineup on each day of…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Eternatus in Pokémon GO: Still a Game Changer for Raids and Max Battles?",
+   "link": "https://pokemongohub.net/post/meta/eternatus-pve/",
+   "date": "2026-11-08T08:56:57.000Z",
+   "summary": "Eternatus is one of the most feared and revered creatures in the Pokémon universe and the mainline games. It’s not surprising that this / behemoth made a tremendous impact in Pokémon GO, notorious for its signature Dynamax Cannon and…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Gigantamax Duraludon: Towering Above Most In The Current Meta",
+   "link": "https://pokemongohub.net/post/meta/gigantamax-duraludon-how-good-is-it-in-max-battles/",
+   "date": "2026-11-08T07:22:02.000Z",
+   "summary": "How is a skyscraper a Dragon? Well, how would I know? It’s Pokémon logic. What I do know is that Gigantamax Duraludon is making its global debut in six-star Max Battles during GO Wild Area 2026: Global on November 14 and 15. It was all…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Dynamax Palkia: A New Meta Tank Against Fire and Water Attacks",
+   "link": "https://pokemongohub.net/post/meta/dynamax-palkia-how-good-is-it-in-max-battles/",
+   "date": "2026-11-08T07:14:30.000Z",
+   "summary": "Dynamax Palkia takes the spotlight on Sunday, November 15, during GO Wild Area 2026: Global. The Space Dragon brings a massive 280 ATK, a solid 215 DEF, and 189 base Stamina, alongside the quick, 0.5-second Dragon Breath. On paper, it has…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Dynamax Dialga: How Good Is It in Max Battles?",
+   "link": "https://pokemongohub.net/post/meta/dynamax-dialga-meta-analysis-how-good-is-it-in-max-battles/",
+   "date": "2026-11-08T07:05:17.000Z",
+   "summary": "Dynamax Dialga takes the spotlight on Saturday, November 14, during GO Wild Area 2026: Global. With other powerful Max Battle Pokémon competing for your resources, is the Time Dragon worth investing in? Before we go any further, let’s make…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Cottonee and Whimsicott arrive in Pokémon Sleep with the Bountiful Banquet event",
+   "link": "https://pokejungle.net/2026/11/07/cottonee-and-whimsicott-arrive-in-pokemon-sleep-with-the-bountiful-banquet-event/",
+   "date": "2026-11-08T04:04:44.000Z",
+   "summary": "Cottonee and its evolution Whimsicott will be coming soon to Pokémon Sleep, along with the Bountiful Banquet Week event. The two new Pokémon will be able to find Snackable Nuts which can be used in new recipes. Bountiful Banquet Week…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Minior Showers: Leonid (November 2026)",
+   "link": "https://pokemongohub.net/post/event/minior-showers-leonid-november-2026/",
+   "date": "2026-11-07T17:21:16.000Z",
+   "summary": "Minior Showers brings with it the different core forms of Minior, and is a series of events timed to coincide with real-world meteor showers. The second event runs from November 14 to 19, 2026, bringing with it the debut of a new colour…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Hisuian Goodra Meta Guide: Is It Worth Building?",
+   "link": "https://pokemongohub.net/post/meta/hisuian-goodra-meta-guide-is-it-worth-building/",
+   "date": "2026-11-07T16:57:12.000Z",
+   "summary": "Hello Trainers! Welcome to another meta-analysis, where we take a close look at Hisuian Goodra, the final evolution of Hisuian Sliggoo from the Hisui region. Both these Hisuian forms are making their debut with in-person GO Wild Area 2026…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Man arrested after leaving 6-year-old daughter sleeping in line for Pokemon cards",
+   "link": "https://www.dexerto.com/pokemon/man-arrested-after-leaving-6-year-old-daughter-sleeping-in-line-for-pokemon-cards-3425627/",
+   "date": "2026-11-07T12:50:04.000Z",
+   "summary": "Witnesses told officers that Dooley had given his daughter a pillow and blanket sometime after 1 am before leaving her alone in line.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Store hires overnight guards after thieves steal $50,000 worth of Pokemon cards",
+   "link": "https://www.dexerto.com/pokemon/store-hires-overnight-guards-after-thieves-steal-50000-worth-of-pokemon-cards-3425591/",
+   "date": "2026-11-07T11:08:28.000Z",
+   "summary": "A Tacoma card shop has hired overnight security guards after thieves used a pickup truck as a battering ram to steal around $50,000 in trading cards.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "November brings Pokémon GO changes and new events",
+   "link": "https://pokejungle.net/2026/11/06/november-brings-pokemon-go-changes-and-new-events/",
+   "date": "2026-11-07T03:34:42.000Z",
+   "summary": "Pokémon GO has brought some quality-of-life updates to the game and also announced November’s Community Day, the return of Eternatus and the Twilight Wishes event. And don’t forget — the Pokémon GO Wild Area 2026 will be taking place on…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Avery The Poke Kid’s dad breaks silence after death with plea to Pokemon Company",
+   "link": "https://www.dexerto.com/pokemon/avery-the-poke-kids-dad-breaks-silence-after-death-with-plea-to-pokemon-company-3425558/",
+   "date": "2026-11-06T21:38:19.000Z",
+   "summary": "Avery The Poke Kid’s father has thanked fans for their support and asked Pokemon to help preserve his son’s legacy.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "7-year-old Pokemon fan furious that Magikarp got an SIR card before Gyarados",
+   "link": "https://www.dexerto.com/pokemon/7-year-old-pokemon-fan-furious-that-magikarp-got-an-sir-card-before-gyarados-3425417/",
+   "date": "2026-11-06T15:12:45.000Z",
+   "summary": "A seven-year-old’s furious Gyarados rant goes viral after he asks why Magikarp has a standout IR while its evolution still lacks an SIR.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon Center is selling collectible music box dioramas and framed maps for all nine regions",
+   "link": "https://www.dexerto.com/pokemon/pokemon-center-is-selling-collectible-music-box-dioramas-and-maps-for-all-nine-regions-3425415/",
+   "date": "2026-11-06T15:02:58.000Z",
+   "summary": "Pokemon Center has revealed a new collection of framed maps, dioramas, and miniature landmarks celebrating all nine regions, from Kanto to Paldea.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Redeem a Poké Ball Vivillon Mystery Gift in Pokémon Legends: Z-A for a limited time",
+   "link": "https://pokejungle.net/2026/11/05/redeem-a-poke-ball-vivillon-mystery-gift-in-pokemon-legends-z-a-for-a-limited-time/",
+   "date": "2026-11-06T05:44:08.000Z",
+   "summary": "Players worked together to complete the Vivillon Challenge, evolving over 660,000 Spewpa into Vivillon collectively, and the reward is now available to claim via Mystery Gift: a Poké Ball pattern Vivillon! How to receive Vivillon The Poké…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Free Gigantamax Machamp Timed Research Available This Weekend Only!",
+   "link": "https://pokemongohub.net/post/news/free-gigantamax-machamp-timed-research-available-this-weekend-only/",
+   "date": "2026-11-06T05:09:29.000Z",
+   "summary": "A free GO Wild Area: Gigantamax Machamp Power Up Timed Research is available globally from November 6–8, 2026. Trainers must log in during this weekend to receive the research, but have until November 15 to complete it. The research…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Super Mega Clefable Raid Day",
+   "link": "https://pokemongohub.net/post/event/super-mega-clefable-raid-day/",
+   "date": "2026-11-05T18:14:11.000Z",
+   "summary": "Mega Clefable debuts during Clefable Super Mega Raid Day on Saturday, November 28, 2026, from 2:00 p.m. to 5:00 p.m. local time. Mega Clefable appears in Super Mega Raids with an increased chance to be Shiny, and you can get up to six free…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon cards can now be delivered in 15 minutes with massive discounts on rare cards",
+   "link": "https://www.dexerto.com/pokemon/pokemon-cards-can-now-be-delivered-in-15-minutes-with-massive-discounts-on-rare-cards-3425137/",
+   "date": "2026-11-05T14:54:22.000Z",
+   "summary": "Gopuff is offering weekly Pokemon card drops that can be delivered to their doors in as little as 15 minutes, with some deals under market value.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon GO Wild Area: Mexico City – Additional Details, Maps, In-Person Activities, Notable Trainers etc",
+   "link": "https://pokemongohub.net/post/event/pokemon-go-wild-area-mexico-city-additional-details-maps-in-person-activities-notable-trainers-etc/",
+   "date": "2026-11-05T13:36:30.000Z",
+   "summary": "GO Wild Area 2026: Mexico City takes place on November 6, 7 and 8, from 10:00 a.m. to 6:00 p.m. local time each day, with gameplay throughout Mexico City, Mexico. Gigantamax Duraludon debuts in six-star Max Battles, Dynamax Dialga and…",
+   "source": "gohub",
+   "lang": "en"
+  },
+  {
+   "title": "Illegal gambling ring busted after using Pokemon cards as payouts",
+   "link": "https://www.dexerto.com/pokemon/illegal-gambling-ring-busted-after-using-pokemon-cards-as-payouts-3425040/",
+   "date": "2026-11-05T11:51:32.000Z",
+   "summary": "Police in Texas have busted an alleged illegal gambling operation that was using Pokemon and sports trading cards to pay out winnings instead of cash.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokémon Pokopia Expansion Pass Part 2 gets release date & new Applin event announced",
+   "link": "https://pokejungle.net/2026/11/04/pokemon-pokopia-expansion-pass-part-2-gets-release-date-new-applin-event-announced/",
+   "date": "2026-11-04T14:52:05.000Z",
+   "summary": "We finally know when the second part of the Pokémon Pokopia Expansion Pass DLC will be arriving: Part 2, Dazzling Decorations, will be available on December 9, 2026. Players will be able to accessorize their character and Pokémon they’ve…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon Center is selling customizable keychains so fans can show off their full team of six",
+   "link": "https://www.dexerto.com/pokemon/pokemon-center-is-selling-customizable-keychains-so-fans-can-show-off-their-full-team-of-six-3424424/",
+   "date": "2026-11-03T15:32:53.000Z",
+   "summary": "Pokémon Center is launching customizable “My Pokémon Party” keychains that let fans display their full team of six on the go.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon collector reveals $660,000 “dream card” was actually fake",
+   "link": "https://www.dexerto.com/pokemon/pokemon-collector-reveals-660000-dream-card-was-actually-fake-3424266/",
+   "date": "2026-11-03T11:03:14.000Z",
+   "summary": "A Pokemon collector has revealed that they spent over $600,000 on their “dream card,” only to find out that it was actually a fake slab.",
+   "source": "dexerto",
+   "lang": "en"
+  },
+  {
+   "title": "Takara Tomy Pokémon releases for September-November 2026",
+   "link": "https://pokejungle.net/2026/11/02/takara-tomy-pokemon-releases-for-september-november-2026/",
+   "date": "2026-11-03T02:46:55.000Z",
+   "summary": "Takara Tomy has released quite a bit of Pokémon merch in September and October, and November will bring additional items as well! Below are the plushies, Mon Colle figures and more for fall 2026. Want to buy any of the goods below?…",
+   "source": "pokejungle",
+   "lang": "en"
+  },
+  {
+   "title": "Pokemon World Champion selling 2022 championship trophy for $400,000",
+   "link": "https://www.dexerto.com/pokemon/pokemon-world-champion-selling-2022-championship-trophy-for-400000-3423697/",
+   "date": "2026-11-01T16:20:08.000Z",
+   "summary": "Junglebook described the trophy as being in pristine condition, claiming it had only been held by him during the 2022 awards ceremony.",
+   "source": "dexerto",
+   "lang": "en"
+  }
+ ]
+}
